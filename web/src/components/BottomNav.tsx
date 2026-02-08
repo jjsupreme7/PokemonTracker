@@ -35,7 +35,7 @@ export function BottomNav() {
         })}
 
         {/* Center Scan Button */}
-        <Link href="/search" className="relative -mt-6 flex flex-col items-center">
+        <Link href="/scan" className="relative -mt-6 flex flex-col items-center">
           <div className="w-14 h-14 rounded-full bg-accent-green flex items-center justify-center shadow-lg shadow-accent-green/30">
             <ScanIcon className="w-6 h-6 text-white" />
           </div>

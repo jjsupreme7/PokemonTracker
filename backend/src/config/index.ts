@@ -13,6 +13,10 @@ export const config = {
     baseUrl: 'https://api.pokemontcg.io/v2',
   },
 
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY || '',
+  },
+
   apns: {
     keyPath: process.env.APNS_KEY_PATH || '',
     keyId: process.env.APNS_KEY_ID || '',

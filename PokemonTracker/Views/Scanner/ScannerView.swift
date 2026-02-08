@@ -347,19 +347,10 @@ struct ScannerView: View {
         }
 
         do {
-            // Step 1: Recognize text with confidence scores
-            let recognizedTexts = try await scannerService.recognizeText(from: image)
+            // Step 1: Identify card using Claude Vision
+            let identifier = try await scannerService.identifyCard(from: image)
 
-            guard !recognizedTexts.isEmpty else {
-                throw ScannerError.noTextFound
-            }
-
-            // Step 2: Parse card identifiers with confidence
-            guard let identifier = scannerService.parseCardIdentifiers(from: recognizedTexts) else {
-                throw ScannerError.cardNotFound
-            }
-
-            // Step 3: Search for matching cards and get result with confidence
+            // Step 2: Search for matching cards
             let result = try await scannerService.findCard(from: identifier)
 
             await MainActor.run {

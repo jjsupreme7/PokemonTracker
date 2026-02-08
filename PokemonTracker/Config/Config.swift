@@ -48,5 +48,8 @@ enum Config {
 
         // Devices
         static var registerDevice: URL { baseURL.appendingPathComponent("/api/devices/register") }
+
+        // Scanner
+        static var scanIdentify: URL { baseURL.appendingPathComponent("/api/scan/identify") }
     }
 }

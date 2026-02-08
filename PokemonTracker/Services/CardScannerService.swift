@@ -131,6 +131,74 @@ class CardScannerService: ObservableObject {
         return parseCardIdentifiers(from: recognized)
     }
 
+    /// Identify a card using Claude Vision via the backend API
+    func identifyCard(from image: UIImage) async throws -> CardIdentifier {
+        // Resize image to max 1024px
+        let resized = resizeImage(image, maxDimension: 1024)
+
+        guard let jpegData = resized.jpegData(compressionQuality: 0.85) else {
+            throw ScannerError.invalidImage
+        }
+
+        let base64 = jpegData.base64EncodedString()
+
+        // Build request to backend
+        var request = URLRequest(url: Config.API.scanIdentify)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let token = await AuthService.shared.accessToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let body: [String: String] = [
+            "image": base64,
+            "mimeType": "image/jpeg"
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            let httpResponse = response as? HTTPURLResponse
+            let errorBody = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+            let message = errorBody?["error"] as? String ?? "Scanner failed"
+            throw APIError.serverError(httpResponse?.statusCode ?? 500, message)
+        }
+
+        let result = try JSONDecoder().decode(ClaudeVisionResponse.self, from: data)
+
+        let confidence: Float = switch result.confidence {
+        case "high": 0.95
+        case "medium": 0.7
+        case "low": 0.4
+        default: 0.2
+        }
+
+        return CardIdentifier(
+            name: result.name,
+            setNumber: result.cardNumber,
+            setCode: nil,
+            confidence: confidence
+        )
+    }
+
+    /// Resize image keeping aspect ratio
+    private func resizeImage(_ image: UIImage, maxDimension: CGFloat) -> UIImage {
+        let size = image.size
+        let maxSide = max(size.width, size.height)
+        guard maxSide > maxDimension else { return image }
+
+        let scale = maxDimension / maxSide
+        let newSize = CGSize(width: size.width * scale, height: size.height * scale)
+
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+    }
+
     /// Search for a card based on scanned identifiers
     func findCard(from identifier: CardIdentifier) async throws -> ScanResult {
         let service = PokemonTCGService.shared
@@ -257,6 +325,16 @@ struct ScanResult {
     var confidencePercent: Int {
         Int(overallConfidence * 100)
     }
+}
+
+/// Response from Claude Vision card identification
+struct ClaudeVisionResponse: Codable {
+    let name: String
+    let set: String?
+    let cardNumber: String?
+    let variant: String?
+    let confidence: String
+    let reasoning: String
 }
 
 enum ScannerError: LocalizedError {
