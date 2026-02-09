@@ -8,6 +8,15 @@ struct HomeView: View {
     @State private var isLoading = false
     @State private var showScrollToTop = false
     @State private var scrollOffset: CGFloat = 0
+    @State private var marketMovers: MarketMoversResponse?
+    @State private var isLoadingMovers = false
+    @State private var selectedMoverCategory: MoverCategory = .gainers
+
+    enum MoverCategory: String, CaseIterable {
+        case gainers = "Gainers"
+        case losers = "Losers"
+        case hot = "Hot"
+    }
 
     private var totalValue: Double {
         collection.reduce(0) { $0 + $1.totalValue }
@@ -80,6 +89,7 @@ struct HomeView: View {
                         }
                     }
                     .refreshable {
+                        await loadMarketMovers()
                         await loadTrendingCards()
                     }
 
@@ -100,8 +110,27 @@ struct HomeView: View {
             .navigationTitle("Pokemon Tracker")
             .preferredColorScheme(.dark)
             .task {
+                await loadMarketMovers()
                 await loadTrendingCards()
             }
+        }
+    }
+
+    // MARK: - Load Market Movers
+
+    private func loadMarketMovers() async {
+        guard !isLoadingMovers else { return }
+        isLoadingMovers = true
+
+        do {
+            let response = try await APIService.shared.getMarketMovers()
+            await MainActor.run {
+                marketMovers = response
+                isLoadingMovers = false
+            }
+        } catch {
+            await MainActor.run { isLoadingMovers = false }
+            print("Failed to load market movers: \(error)")
         }
     }
 
@@ -170,47 +199,128 @@ struct HomeView: View {
 
     // MARK: - Market Movers Carousel
 
+    private var currentMoverCards: [MarketMoverCard] {
+        guard let movers = marketMovers else { return [] }
+        switch selectedMoverCategory {
+        case .gainers: return movers.gainers
+        case .losers: return movers.losers
+        case .hot: return movers.hotCards
+        }
+    }
+
     private var marketMoversCarousel: some View {
-        CardCarousel(title: "Market Movers", showViewAll: true, viewAllAction: { selectedTab = 1 }) {
-            Button { selectedTab = 1 } label: {
-                NewsAlertCard(
-                    icon: "chart.line.uptrend.xyaxis",
-                    title: "Today's TCG Recap",
-                    subtitle: "Daily market summary",
-                    color: Color.pokemon.primary
-                )
-            }
-            .buttonStyle(PlainButtonStyle())
+        VStack(alignment: .leading, spacing: 12) {
+            // Header
+            HStack {
+                Text("Market Movers")
+                    .font(.headline)
+                    .foregroundColor(Color.pokemon.textPrimary)
 
-            Button { selectedTab = 1 } label: {
-                NewsAlertCard(
-                    icon: "flame.fill",
-                    title: "Hot Cards",
-                    subtitle: "Trending this week",
-                    color: .orange
-                )
-            }
-            .buttonStyle(PlainButtonStyle())
+                Spacer()
 
-            Button { selectedTab = 1 } label: {
-                NewsAlertCard(
-                    icon: "arrow.up.circle.fill",
-                    title: "Top Gainers",
-                    subtitle: "+15% average gain",
-                    color: Color.pokemon.positive
-                )
+                Button {
+                    selectedTab = 1
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("View All")
+                            .font(.subheadline)
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                    }
+                    .foregroundColor(Color.pokemon.primary)
+                }
             }
-            .buttonStyle(PlainButtonStyle())
 
-            Button { selectedTab = 3 } label: {
-                NewsAlertCard(
-                    icon: "bell.fill",
-                    title: "Price Alerts",
-                    subtitle: "3 cards moved",
-                    color: .blue
-                )
+            // Category Picker
+            HStack(spacing: 8) {
+                ForEach(MoverCategory.allCases, id: \.self) { category in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            selectedMoverCategory = category
+                        }
+                    } label: {
+                        Text(category.rawValue)
+                            .font(.caption)
+                            .fontWeight(selectedMoverCategory == category ? .bold : .medium)
+                            .foregroundColor(selectedMoverCategory == category ? .white : Color.pokemon.textSecondary)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(
+                                selectedMoverCategory == category
+                                    ? categoryColor(category)
+                                    : Color.pokemon.surface
+                            )
+                            .cornerRadius(16)
+                    }
+                }
+                Spacer()
             }
-            .buttonStyle(PlainButtonStyle())
+
+            // Cards
+            if isLoadingMovers {
+                HStack(spacing: 12) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.pokemon.surface)
+                            .frame(width: 160, height: 220)
+                            .overlay(ProgressView().tint(Color.pokemon.primary))
+                    }
+                }
+            } else if currentMoverCards.isEmpty {
+                // Fallback to static cards when API is unavailable
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        Button { selectedTab = 1 } label: {
+                            NewsAlertCard(
+                                icon: "chart.line.uptrend.xyaxis",
+                                title: "Top Gainers",
+                                subtitle: "Rising this week",
+                                color: Color.pokemon.positive
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+
+                        Button { selectedTab = 1 } label: {
+                            NewsAlertCard(
+                                icon: "flame.fill",
+                                title: "Hot Cards",
+                                subtitle: "Most tracked",
+                                color: .orange
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+
+                        Button { selectedTab = 3 } label: {
+                            NewsAlertCard(
+                                icon: "bell.fill",
+                                title: "Price Alerts",
+                                subtitle: "Set up alerts",
+                                color: .blue
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(currentMoverCards) { card in
+                            MarketMoverCardView(
+                                card: card,
+                                category: selectedMoverCategory
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func categoryColor(_ category: MoverCategory) -> Color {
+        switch category {
+        case .gainers: return Color.pokemon.positive
+        case .losers: return Color.pokemon.negative
+        case .hot: return .orange
         }
     }
 

@@ -28,3 +28,4 @@ yarn-debug.log*
 # Build
 /build
 /dist
+dist/

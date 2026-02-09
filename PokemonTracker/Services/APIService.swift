@@ -168,6 +168,12 @@ actor APIService {
         try await requestNoContent(url: Config.API.alert(id: id), method: "DELETE")
     }
 
+    // MARK: - Market Movers
+
+    func getMarketMovers() async throws -> MarketMoversResponse {
+        return try await request(url: Config.API.marketMovers, requiresAuth: false)
+    }
+
     // MARK: - Devices
 
     func registerDevice(token: String, platform: String = "ios") async throws {
@@ -333,4 +339,28 @@ struct DeviceToken: Codable {
     let platform: String
     let isActive: Bool
     let createdAt: String
+}
+
+// Market Movers
+struct MarketMoversResponse: Codable {
+    let gainers: [MarketMoverCard]
+    let losers: [MarketMoverCard]
+    let hotCards: [MarketMoverCard]
+    let cachedAt: String
+}
+
+struct MarketMoverCard: Codable, Identifiable {
+    let cardId: String
+    let name: String
+    let setName: String
+    let rarity: String?
+    let imageSmall: String
+    let imageLarge: String
+    let currentPrice: Double?
+    let previousPrice: Double?
+    let priceChange: Double?
+    let priceChangePercent: Double?
+    let trackerCount: Int?
+
+    var id: String { cardId }
 }

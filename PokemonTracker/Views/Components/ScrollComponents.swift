@@ -379,10 +379,111 @@ struct NewsAlertCard: View {
     }
 }
 
+// MARK: - Market Mover Card View
+
+struct MarketMoverCardView: View {
+    let card: MarketMoverCard
+    let category: HomeView.MoverCategory
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Card Image with signal badge
+            ZStack(alignment: .topTrailing) {
+                AsyncImage(url: URL(string: card.imageSmall)) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                } placeholder: {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.pokemon.surface)
+                        .overlay(
+                            ProgressView()
+                                .tint(Color.pokemon.primary)
+                        )
+                }
+                .frame(width: 120, height: 168)
+                .cornerRadius(8)
+
+                // Signal badge
+                Text(signalText)
+                    .font(.caption2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(signalColor)
+                    .cornerRadius(4)
+                    .padding(6)
+            }
+
+            // Card Info
+            VStack(alignment: .leading, spacing: 2) {
+                Text(card.name)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(Color.pokemon.textPrimary)
+                    .lineLimit(1)
+
+                Text(card.setName)
+                    .font(.caption)
+                    .foregroundColor(Color.pokemon.textSecondary)
+                    .lineLimit(1)
+
+                if let price = card.currentPrice {
+                    Text(String(format: "$%.2f", price))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color.pokemon.gold)
+                }
+
+                // Price change or tracker count
+                if category == .hot, let count = card.trackerCount, count > 0 {
+                    HStack(spacing: 2) {
+                        Image(systemName: "person.2.fill")
+                            .font(.caption2)
+                        Text("\(count) trackers")
+                            .font(.caption2)
+                    }
+                    .foregroundColor(.orange)
+                } else if let change = card.priceChangePercent {
+                    let isPositive = change >= 0
+                    HStack(spacing: 2) {
+                        Image(systemName: isPositive ? "arrow.up" : "arrow.down")
+                            .font(.caption2)
+                        Text(String(format: "%@%.1f%%", isPositive ? "+" : "", change))
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(isPositive ? Color.pokemon.positive : Color.pokemon.negative)
+                }
+            }
+            .frame(width: 120, alignment: .leading)
+        }
+        .padding(8)
+        .background(Color.pokemon.surface)
+        .cornerRadius(12)
+    }
+
+    private var signalText: String {
+        switch category {
+        case .gainers: return "RISING"
+        case .losers: return "DROPPING"
+        case .hot: return "HOT"
+        }
+    }
+
+    private var signalColor: Color {
+        switch category {
+        case .gainers: return Color.pokemon.positive
+        case .losers: return Color.pokemon.negative
+        case .hot: return .orange
+        }
+    }
+}
+
 #Preview {
     ScrollView {
         VStack(spacing: 20) {
-            // News Carousel
             CardCarousel(title: "Market Movers") {
                 NewsAlertCard(
                     icon: "chart.line.uptrend.xyaxis",

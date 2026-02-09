@@ -55,5 +55,8 @@ enum Config {
 
         // Scanner
         static var scanIdentify: URL { baseURL.appendingPathComponent("/api/scan/identify") }
+
+        // Market Movers
+        static var marketMovers: URL { baseURL.appendingPathComponent("/api/market-movers") }
     }
 }

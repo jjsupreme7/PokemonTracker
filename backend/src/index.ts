@@ -3,16 +3,19 @@ import { app } from './app.js';
 import { config } from './config/index.js';
 import { PriceUpdateJob } from './jobs/price-update.job.js';
 import { AlertProcessorJob } from './jobs/alert-processor.job.js';
+import { MarketMoversJob } from './jobs/market-movers.job.js';
 
 const PORT = config.port;
 
 // Initialize scheduled jobs
 const priceUpdateJob = new PriceUpdateJob();
 const alertProcessorJob = new AlertProcessorJob();
+const marketMoversJob = new MarketMoversJob();
 
 // Start jobs
 priceUpdateJob.start();
 alertProcessorJob.start();
+marketMoversJob.start();
 
 // Start server
 app.listen(PORT, () => {

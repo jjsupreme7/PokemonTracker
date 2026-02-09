@@ -36,6 +36,20 @@ export default async function DashboardPage() {
     .order('date_added', { ascending: false })
     .limit(5);
 
+  // Fetch market movers from cache
+  const { data: marketMoversRaw } = await supabase
+    .from('market_movers_cache')
+    .select('*')
+    .order('computed_at', { ascending: false })
+    .limit(30);
+
+  // Group by category (only latest batch)
+  const latestComputedAt = marketMoversRaw?.[0]?.computed_at;
+  const latestMovers = marketMoversRaw?.filter((m: any) => m.computed_at === latestComputedAt) || [];
+  const gainers = latestMovers.filter((m: any) => m.category === 'gainers');
+  const losers = latestMovers.filter((m: any) => m.category === 'losers');
+  const hotCards = latestMovers.filter((m: any) => m.category === 'hot_cards');
+
   const formatValue = (val: number) => {
     if (val >= 1000) return `$${(val / 1000).toFixed(1)}K`;
     return `$${val.toFixed(2)}`;
@@ -142,6 +156,61 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      {/* Market Movers */}
+      {latestMovers.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-heading font-semibold text-text-primary">Market Movers</h2>
+            <Link href="/search" className="text-xs text-accent-red font-medium flex items-center gap-0.5">
+              View All
+              <ChevronRightIcon className="w-3 h-3" />
+            </Link>
+          </div>
+
+          {/* Gainers */}
+          {gainers.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs text-accent-green font-semibold mb-2 uppercase tracking-wider flex items-center gap-1">
+                <TrendUpIcon className="w-3 h-3" /> Top Gainers
+              </p>
+              <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+                {gainers.slice(0, 5).map((card: any) => (
+                  <MoverCard key={card.id} card={card} type="gainer" />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Losers */}
+          {losers.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs text-accent-red font-semibold mb-2 uppercase tracking-wider flex items-center gap-1">
+                <TrendDownIcon className="w-3 h-3" /> Top Losers
+              </p>
+              <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+                {losers.slice(0, 5).map((card: any) => (
+                  <MoverCard key={card.id} card={card} type="loser" />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Hot Cards */}
+          {hotCards.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs text-orange-400 font-semibold mb-2 uppercase tracking-wider flex items-center gap-1">
+                🔥 Hot Cards
+              </p>
+              <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
+                {hotCards.slice(0, 5).map((card: any) => (
+                  <MoverCard key={card.id} card={card} type="hot" />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Recent Additions */}
       {recentCards && recentCards.length > 0 && (
         <div>
@@ -232,6 +301,51 @@ function StatCard({ color, label, value, sub }: {
       <p className="text-xs text-text-secondary mb-1">{label}</p>
       <p className={`text-2xl font-heading font-bold ${textColor}`}>{value}</p>
       <p className="text-[10px] text-text-tertiary mt-0.5">{sub}</p>
+    </div>
+  );
+}
+
+function MoverCard({ card, type }: { card: any; type: 'gainer' | 'loser' | 'hot' }) {
+  const badgeColor = type === 'gainer' ? 'bg-accent-green' : type === 'loser' ? 'bg-accent-red' : 'bg-orange-500';
+  const badgeText = type === 'gainer' ? 'RISING' : type === 'loser' ? 'DROPPING' : 'HOT';
+  const changeColor = (card.price_change_percent ?? 0) >= 0 ? 'text-accent-green' : 'text-accent-red';
+
+  return (
+    <div className="flex-shrink-0 w-[140px] bg-bg-surface rounded-xl border border-border-subtle p-2 card-holo-shimmer animate-fade-in-up">
+      <div className="relative">
+        {card.image_small ? (
+          <img
+            src={card.image_small}
+            alt={card.name}
+            className="w-full h-[140px] object-contain rounded-lg"
+          />
+        ) : (
+          <div className="w-full h-[140px] bg-bg-primary rounded-lg flex items-center justify-center text-text-tertiary text-sm">
+            ?
+          </div>
+        )}
+        <span className={`absolute top-1 right-1 px-1.5 py-0.5 ${badgeColor} text-white text-[9px] font-bold rounded`}>
+          {badgeText}
+        </span>
+      </div>
+      <div className="mt-2">
+        <p className="text-xs font-medium text-text-primary truncate">{card.name}</p>
+        <p className="text-[10px] text-text-secondary truncate">{card.set_name}</p>
+        {card.current_price != null && (
+          <p className="text-sm font-semibold text-accent-gold mt-0.5">
+            ${Number(card.current_price).toFixed(2)}
+          </p>
+        )}
+        {type === 'hot' && card.tracker_count > 0 ? (
+          <p className="text-[10px] text-orange-400 mt-0.5">
+            👥 {card.tracker_count} trackers
+          </p>
+        ) : card.price_change_percent != null ? (
+          <p className={`text-[10px] font-semibold mt-0.5 ${changeColor}`}>
+            {card.price_change_percent >= 0 ? '↑' : '↓'} {card.price_change_percent >= 0 ? '+' : ''}{Number(card.price_change_percent).toFixed(1)}%
+          </p>
+        ) : null}
+      </div>
     </div>
   );
 }
