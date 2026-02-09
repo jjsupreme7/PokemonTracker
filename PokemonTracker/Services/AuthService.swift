@@ -79,22 +79,21 @@ class AuthService: ObservableObject {
                 password: password
             )
 
-            if let user = response.user {
-                // Create profile if username provided
-                if let username = username {
-                    try await supabase
-                        .from("profiles")
-                        .insert([
-                            "id": user.id.uuidString,
-                            "username": username,
-                            "display_name": username
-                        ])
-                        .execute()
-                }
-
-                self.currentUser = user
-                self.isAuthenticated = true
+            let user = response.user
+            // Create profile if username provided
+            if let username = username {
+                try await supabase
+                    .from("profiles")
+                    .insert([
+                        "id": user.id.uuidString,
+                        "username": username,
+                        "display_name": username
+                    ])
+                    .execute()
             }
+
+            self.currentUser = user
+            self.isAuthenticated = true
         } catch {
             throw AuthError.networkError(error)
         }

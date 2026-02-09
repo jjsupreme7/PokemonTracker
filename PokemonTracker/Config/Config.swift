@@ -3,12 +3,16 @@ import Foundation
 enum Config {
     // MARK: - Supabase Configuration
     // Get these from your Supabase project settings
-    static let supabaseURL = "https://twqjbatnqmytypfgewdn.supabase.co"
-    static let supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3cWpiYXRucW15dHlwZmdld2RuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNDM2OTEsImV4cCI6MjA4NDcxOTY5MX0.Wffr39nIQLwsxTFiz6L8zcOaOjhjQ_5Oy9UJ2vdq-pc"
+    static let supabaseURL = "https://gajvwzfrltmlxtuidika.supabase.co"
+    static let supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhanZ3emZybHRtbHh0dWlkaWthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NzUzMjMsImV4cCI6MjA4NjE1MTMyM30.dVlJ3ou2PDtd0ZYh94M7h8ECA7wyQV1O6JiCdXtc4cg"
+
+    // MARK: - PokeTrace API (pricing from eBay, TCGPlayer, CardMarket)
+    static let poketraceAPIKey = "pc_db7f153add976df4f5e7bc490c3cb1e8b37de8339b60861e"
+    static let poketraceBaseURL = "https://api.poketrace.com/v1"
 
     // MARK: - Backend API
     // Your Node.js backend URL
-    static let apiBaseURL = "http://localhost:3000"
+    static let apiBaseURL = "http://localhost:3003"
 
     // MARK: - Environment
     #if DEBUG

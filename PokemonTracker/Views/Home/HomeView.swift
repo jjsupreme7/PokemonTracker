@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct HomeView: View {
+    @Binding var selectedTab: Int
     @Query private var collection: [CollectionCard]
     @State private var trendingCards: [Card] = []
     @State private var isLoading = false
@@ -171,33 +172,45 @@ struct HomeView: View {
 
     private var marketMoversCarousel: some View {
         CardCarousel(title: "Market Movers", showViewAll: true) {
-            NewsAlertCard(
-                icon: "chart.line.uptrend.xyaxis",
-                title: "Today's TCG Recap",
-                subtitle: "Daily market summary",
-                color: Color.pokemon.primary
-            )
+            Button { selectedTab = 1 } label: {
+                NewsAlertCard(
+                    icon: "chart.line.uptrend.xyaxis",
+                    title: "Today's TCG Recap",
+                    subtitle: "Daily market summary",
+                    color: Color.pokemon.primary
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
 
-            NewsAlertCard(
-                icon: "flame.fill",
-                title: "Hot Cards",
-                subtitle: "Trending this week",
-                color: .orange
-            )
+            Button { selectedTab = 1 } label: {
+                NewsAlertCard(
+                    icon: "flame.fill",
+                    title: "Hot Cards",
+                    subtitle: "Trending this week",
+                    color: .orange
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
 
-            NewsAlertCard(
-                icon: "arrow.up.circle.fill",
-                title: "Top Gainers",
-                subtitle: "+15% average gain",
-                color: Color.pokemon.positive
-            )
+            Button { selectedTab = 1 } label: {
+                NewsAlertCard(
+                    icon: "arrow.up.circle.fill",
+                    title: "Top Gainers",
+                    subtitle: "+15% average gain",
+                    color: Color.pokemon.positive
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
 
-            NewsAlertCard(
-                icon: "bell.fill",
-                title: "Price Alerts",
-                subtitle: "3 cards moved",
-                color: .blue
-            )
+            Button { selectedTab = 3 } label: {
+                NewsAlertCard(
+                    icon: "bell.fill",
+                    title: "Price Alerts",
+                    subtitle: "3 cards moved",
+                    color: .blue
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
         }
     }
 
@@ -232,7 +245,7 @@ struct HomeView: View {
                     icon: "camera.fill",
                     color: Color.pokemon.primary
                 ) {
-                    // Navigate to scanner - handled by tab
+                    selectedTab = 2
                 }
 
                 QuickActionButton(
@@ -240,7 +253,7 @@ struct HomeView: View {
                     icon: "magnifyingglass",
                     color: Color.blue
                 ) {
-                    // Navigate to search - handled by tab
+                    selectedTab = 1
                 }
 
                 QuickActionButton(
@@ -248,7 +261,7 @@ struct HomeView: View {
                     icon: "folder.fill",
                     color: Color.green
                 ) {
-                    // Navigate to portfolio - handled by tab
+                    selectedTab = 3
                 }
             }
         }
@@ -372,6 +385,6 @@ struct RecentCardRow: View {
 }
 
 #Preview {
-    HomeView()
+    HomeView(selectedTab: .constant(0))
         .modelContainer(for: CollectionCard.self, inMemory: true)
 }
