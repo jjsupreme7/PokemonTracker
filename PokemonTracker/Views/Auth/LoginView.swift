@@ -18,14 +18,18 @@ struct LoginView: View {
                     VStack(spacing: 32) {
                         // Logo/Header
                         VStack(spacing: 16) {
-                            Image(systemName: "sparkles")
+                            Image(systemName: "circle.circle.fill")
                                 .font(.system(size: 60))
                                 .foregroundColor(.theme.primary)
 
-                            Text("Pokemon Tracker")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundColor(.theme.textPrimary)
+                            HStack(spacing: 8) {
+                                Text("Pokemon")
+                                    .foregroundColor(.theme.primary)
+                                Text("Tracker")
+                                    .foregroundColor(.theme.gold)
+                            }
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
 
                             Text("Sign in to sync your collection")
                                 .font(.subheadline)
@@ -67,7 +71,7 @@ struct LoginView: View {
                                     showForgotPassword = true
                                 }
                                 .font(.caption)
-                                .foregroundColor(.theme.primary)
+                                .foregroundColor(.theme.gold)
                             }
                         }
                         .padding(.horizontal, 24)

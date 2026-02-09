@@ -46,13 +46,16 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="py-16">
+    <div className="py-16 animate-fade-in-up">
       {/* Logo/Header */}
       <div className="text-center mb-8">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent-green-dim flex items-center justify-center">
-          <PokeballIcon className="w-8 h-8 text-accent-green" />
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent-red-dim flex items-center justify-center sparkle-container animate-pokeball-catch">
+          <PokeballIcon className="w-8 h-8" filled />
         </div>
-        <h1 className="text-3xl font-bold text-text-primary mb-2">Pokemon Tracker</h1>
+        <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">
+          <span className="text-accent-red">Pokemon</span>{' '}
+          <span className="text-accent-gold">Tracker</span>
+        </h1>
         <p className="text-text-secondary">Create your account</p>
       </div>
 
@@ -72,7 +75,7 @@ export default function RegisterPage() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-4 bg-bg-surface border border-border-subtle rounded-xl text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent-green/50 transition-colors"
+            className="w-full px-4 py-4 bg-bg-surface border border-border-subtle rounded-xl text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent-gold/50 transition-colors"
             required
           />
         </div>
@@ -85,7 +88,7 @@ export default function RegisterPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-4 bg-bg-surface border border-border-subtle rounded-xl text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent-green/50 transition-colors"
+            className="w-full px-4 py-4 bg-bg-surface border border-border-subtle rounded-xl text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent-gold/50 transition-colors"
             required
           />
         </div>
@@ -98,7 +101,7 @@ export default function RegisterPage() {
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full px-4 py-4 bg-bg-surface border border-border-subtle rounded-xl text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent-green/50 transition-colors"
+            className="w-full px-4 py-4 bg-bg-surface border border-border-subtle rounded-xl text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent-gold/50 transition-colors"
             required
           />
         </div>
@@ -106,10 +109,10 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-accent-green hover:bg-accent-green/90 text-white font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-4 bg-accent-red hover:bg-accent-red-bright text-white font-semibold rounded-xl btn-pokeball disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
-            <span className="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <PokeballIcon className="inline-block w-5 h-5 text-white animate-pokeball-spin" />
           ) : (
             'Create Account'
           )}
@@ -118,7 +121,7 @@ export default function RegisterPage() {
 
       <p className="mt-6 text-center text-text-secondary">
         Already have an account?{' '}
-        <Link href="/login" className="text-accent-green font-semibold">
+        <Link href="/login" className="text-accent-red font-semibold">
           Sign In
         </Link>
       </p>

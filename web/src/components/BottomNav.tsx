@@ -15,7 +15,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-bg-surface border-t border-border-subtle safe-area-pb z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-bg-surface/90 backdrop-blur-xl border-t border-accent-red/20 safe-area-pb z-50">
       <div className="max-w-lg mx-auto flex items-center justify-around py-2">
         {/* First two tabs */}
         {tabs.slice(0, 2).map((tab) => {
@@ -24,19 +24,20 @@ export function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-col items-center gap-1 px-3 py-1 transition-colors ${
-                isActive ? 'text-accent-green' : 'text-text-secondary hover:text-text-primary'
+              className={`btn-press flex flex-col items-center gap-1 px-3 py-1 transition-colors ${
+                isActive ? 'text-accent-red' : 'text-text-secondary hover:text-text-primary'
               }`}
             >
               <tab.icon className="w-6 h-6" />
               <span className="text-[10px] font-medium">{tab.label}</span>
+              {isActive && <div className="nav-dot" />}
             </Link>
           );
         })}
 
         {/* Center Scan Button */}
-        <Link href="/scan" className="relative -mt-6 flex flex-col items-center">
-          <div className="w-14 h-14 rounded-full bg-accent-green flex items-center justify-center shadow-lg shadow-accent-green/30">
+        <Link href="/scan" className="btn-press relative -mt-6 flex flex-col items-center">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent-red to-[#B91C1C] flex items-center justify-center shadow-lg shadow-accent-red/30">
             <ScanIcon className="w-6 h-6 text-white" />
           </div>
           <span className="text-[10px] font-medium text-text-secondary mt-1">Scan</span>
@@ -49,12 +50,13 @@ export function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-col items-center gap-1 px-3 py-1 transition-colors ${
-                isActive ? 'text-accent-green' : 'text-text-secondary hover:text-text-primary'
+              className={`btn-press flex flex-col items-center gap-1 px-3 py-1 transition-colors ${
+                isActive ? 'text-accent-red' : 'text-text-secondary hover:text-text-primary'
               }`}
             >
               <tab.icon className="w-6 h-6" />
               <span className="text-[10px] font-medium">{tab.label}</span>
+              {isActive && <div className="nav-dot" />}
             </Link>
           );
         })}

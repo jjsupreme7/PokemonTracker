@@ -15,7 +15,7 @@ export function TimePeriodSelector() {
           onClick={() => setActive(period)}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
             active === period
-              ? 'bg-accent-green/20 text-accent-green'
+              ? 'bg-accent-red/15 text-accent-red'
               : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-hover'
           }`}
         >

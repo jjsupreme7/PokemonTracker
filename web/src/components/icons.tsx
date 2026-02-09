@@ -79,7 +79,19 @@ export function FilterIcon({ className }: { className?: string }) {
   );
 }
 
-export function PokeballIcon({ className }: { className?: string }) {
+export function PokeballIcon({ className, filled }: { className?: string; filled?: boolean }) {
+  if (filled) {
+    return (
+      <svg className={className} viewBox="0 0 24 24">
+        <path d="M12 1C5.925 1 1 5.925 1 12h8.05a3 3 0 0 1 5.9 0H23C23 5.925 18.075 1 12 1z" fill="#DC2626" />
+        <path d="M12 23c6.075 0 11-4.925 11-11h-8.05a3 3 0 0 1-5.9 0H1c0 6.075 4.925 11 11 11z" fill="#F1F5F9" />
+        <circle cx="12" cy="12" r="11" fill="none" stroke="#1E293B" strokeWidth="1.5" />
+        <path d="M1 12h8.05m5.9 0H23" stroke="#1E293B" strokeWidth="1.5" />
+        <circle cx="12" cy="12" r="3" fill="none" stroke="#1E293B" strokeWidth="1.5" />
+        <circle cx="12" cy="12" r="1.5" fill="#1E293B" />
+      </svg>
+    );
+  }
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
       <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" strokeWidth="1.5" />

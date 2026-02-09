@@ -1,20 +1,51 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-bg-primary: #060A13;
-  --color-bg-surface: #0D1320;
-  --color-bg-surface-hover: #131B2E;
-  --color-border-subtle: #1E293B;
-  --color-accent-green: #22C55E;
-  --color-accent-green-dim: rgba(34, 197, 94, 0.15);
-  --color-accent-red: #EF4444;
-  --color-accent-red-dim: rgba(239, 68, 68, 0.15);
+  /* === BACKGROUNDS — Japanese-inspired deep indigo === */
+  --color-bg-primary: #0B0E1A;
+  --color-bg-surface: #121629;
+  --color-bg-surface-hover: #1A1F3A;
+  --color-bg-elevated: #1E2340;
+
+  /* === BORDERS === */
+  --color-border-subtle: #252B4A;
+  --color-border-active: rgba(250, 204, 21, 0.3);
+
+  /* === PRIMARY ACCENT: Pokemon Red === */
+  --color-accent-red: #DC2626;
+  --color-accent-red-bright: #EF4444;
+  --color-accent-red-dim: rgba(220, 38, 38, 0.15);
+
+  /* === SECONDARY ACCENT: Pikachu Gold === */
+  --color-accent-gold: #FACC15;
+  --color-accent-gold-dim: rgba(250, 204, 21, 0.12);
+  --color-accent-gold-dark: #D4A017;
+
+  /* === SUPPLEMENTARY ACCENTS === */
+  --color-accent-sakura: #F9A8D4;
+  --color-accent-sakura-dim: rgba(249, 168, 212, 0.12);
+  --color-accent-green: #4ADE80;
+  --color-accent-green-dim: rgba(74, 222, 128, 0.12);
+  --color-accent-blue: #60A5FA;
+  --color-accent-blue-dim: rgba(96, 165, 250, 0.12);
   --color-accent-orange: #F97316;
-  --color-accent-blue: #3B82F6;
+
+  /* === RARITY COLORS === */
+  --color-rarity-common: #94A3B8;
+  --color-rarity-uncommon: #22D3EE;
+  --color-rarity-rare: #FACC15;
+  --color-rarity-ultra: #A78BFA;
+  --color-rarity-secret: #F472B6;
+
+  /* === TEXT === */
   --color-text-primary: #F1F5F9;
-  --color-text-secondary: #64748B;
-  --color-text-tertiary: #475569;
-  --font-sans: var(--font-inter);
+  --color-text-secondary: #8B92B3;
+  --color-text-tertiary: #5B6285;
+  --color-text-gold: #FACC15;
+
+  /* === FONTS === */
+  --font-heading: var(--font-outfit);
+  --font-sans: var(--font-dm-sans);
 }
 
 body {
@@ -25,4 +56,410 @@ body {
 
 .safe-area-pb {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ===================================================
+   ANIMATIONS — Keyframes
+   =================================================== */
+
+/* Pokeball loading animations */
+@keyframes pokeball-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pokeball-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-20deg); }
+  75% { transform: rotate(20deg); }
+}
+
+@keyframes pokeball-catch {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.85); }
+}
+
+/* Card holographic shimmer */
+@keyframes holo-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Entrance animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Rarity glow pulses */
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 12px rgba(250, 204, 21, 0.25), 0 0 0 1px rgba(250, 204, 21, 0.4); }
+  50% { box-shadow: 0 0 20px rgba(250, 204, 21, 0.4), 0 0 0 1px rgba(250, 204, 21, 0.6); }
+}
+
+@keyframes pulse-ultra {
+  0%, 100% { box-shadow: 0 0 16px rgba(167, 139, 250, 0.3), 0 0 0 1px rgba(167, 139, 250, 0.5); }
+  50% { box-shadow: 0 0 24px rgba(167, 139, 250, 0.5), 0 0 0 1px rgba(167, 139, 250, 0.7); }
+}
+
+@keyframes rainbow-glow {
+  0% { box-shadow: 0 0 20px rgba(244, 114, 182, 0.3), 0 0 0 1px rgba(244, 114, 182, 0.4); }
+  33% { box-shadow: 0 0 20px rgba(167, 139, 250, 0.3), 0 0 0 1px rgba(167, 139, 250, 0.4); }
+  66% { box-shadow: 0 0 20px rgba(96, 165, 250, 0.3), 0 0 0 1px rgba(96, 165, 250, 0.4); }
+  100% { box-shadow: 0 0 20px rgba(244, 114, 182, 0.3), 0 0 0 1px rgba(244, 114, 182, 0.4); }
+}
+
+/* Shimmer / skeleton loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Sparkle */
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+/* Nav bounce */
+@keyframes nav-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+/* ===================================================
+   UTILITY CLASSES — Animations
+   =================================================== */
+
+.animate-pokeball-spin {
+  animation: pokeball-spin 1s linear infinite;
+}
+
+.animate-pokeball-wobble {
+  animation: pokeball-wobble 0.6s ease-in-out infinite;
+}
+
+.animate-pokeball-catch {
+  animation: pokeball-catch 0.8s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+/* Stagger children — apply to parent container */
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 360ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 480ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 540ms; }
+.stagger-children > *:nth-child(11) { animation-delay: 600ms; }
+.stagger-children > *:nth-child(12) { animation-delay: 660ms; }
+
+/* ===================================================
+   UTILITY CLASSES — Card Effects
+   =================================================== */
+
+/* Holographic shimmer on hover */
+.card-holo-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-holo-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(250, 204, 21, 0.06) 45%,
+    rgba(250, 204, 21, 0.13) 50%,
+    rgba(250, 204, 21, 0.06) 55%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.card-holo-shimmer:hover::after {
+  opacity: 1;
+  animation: holo-shimmer 1.5s ease-in-out infinite;
+}
+
+/* 3D tilt on hover */
+.card-tilt {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.card-tilt:hover {
+  transform: perspective(800px) rotateY(-5deg) rotateX(3deg) scale(1.02);
+  box-shadow:
+    8px 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(250, 204, 21, 0.08);
+}
+
+/* ===================================================
+   UTILITY CLASSES — Buttons
+   =================================================== */
+
+/* Tactile press */
+.btn-press {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.96);
+}
+
+/* Primary Pokemon button with glow + shine sweep */
+.btn-pokeball {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+}
+
+.btn-pokeball:hover {
+  box-shadow: 0 0 20px rgba(220, 38, 38, 0.3), 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-pokeball:active {
+  transform: scale(0.96);
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.2);
+}
+
+.btn-pokeball::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+
+.btn-pokeball:hover::after {
+  left: 120%;
+}
+
+/* ===================================================
+   UTILITY CLASSES — Rarity Glows
+   =================================================== */
+
+.rarity-glow-common {
+  box-shadow: 0 0 0 1px var(--color-rarity-common);
+}
+
+.rarity-glow-uncommon {
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.2), 0 0 0 1px rgba(34, 211, 238, 0.3);
+}
+
+.rarity-glow-rare {
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.25), 0 0 0 1px rgba(250, 204, 21, 0.4);
+  animation: pulse-gold 3s ease-in-out infinite;
+}
+
+.rarity-glow-ultra {
+  box-shadow: 0 0 16px rgba(167, 139, 250, 0.3), 0 0 0 1px rgba(167, 139, 250, 0.5);
+  animation: pulse-ultra 2.5s ease-in-out infinite;
+}
+
+.rarity-glow-secret {
+  background: linear-gradient(135deg,
+    rgba(244, 114, 182, 0.1),
+    rgba(167, 139, 250, 0.1),
+    rgba(96, 165, 250, 0.1)
+  );
+  box-shadow: 0 0 20px rgba(244, 114, 182, 0.3), 0 0 0 1px rgba(244, 114, 182, 0.4);
+  animation: rainbow-glow 4s ease-in-out infinite;
+}
+
+/* ===================================================
+   UTILITY CLASSES — Visual Motifs
+   =================================================== */
+
+/* Japanese wave pattern (seigaiha) */
+.pattern-seigaiha {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23252B4A' fill-opacity='0.15'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h2l-2 2V0zm0 4l4-4h2l-6 6V4zm0 4l8-8h2L40 10V8zm0 4L52 0h2L40 14v-2zm0 4L56 0h2L40 18v-2zm0 4L60 0h2L40 22v-2zm0 4L64 0h2L40 26v-2zm0 4L68 0h2L40 30v-2zm0 4L72 0h2L40 34v-2zm0 4L76 0h2L40 38v-2zm0 4L80 0v2L42 40h-2zm4 0L80 4v2L46 40h-2zm4 0L80 8v2L50 40h-2zm4 0l28-28v2L54 40h-2zm4 0l24-24v2L58 40h-2zm4 0l20-20v2L62 40h-2zm4 0l16-16v2L66 40h-2zm4 0l12-12v2L70 40h-2zm4 0l8-8v2l-6 6h-2zm4 0l4-4v2l-2 2h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Gradient border for hero cards */
+.gradient-border {
+  position: relative;
+  border: none !important;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(220, 38, 38, 0.5),
+    rgba(250, 204, 21, 0.3),
+    transparent 60%
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Sparkle container */
+.sparkle-container {
+  position: relative;
+}
+
+.sparkle-container::before,
+.sparkle-container::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-accent-gold);
+  animation: sparkle 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.sparkle-container::before {
+  top: 10%;
+  right: 15%;
+  animation-delay: 0.5s;
+}
+
+.sparkle-container::after {
+  bottom: 20%;
+  left: 10%;
+  animation-delay: 1.2s;
+}
+
+/* Skeleton shimmer */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-surface) 25%,
+    var(--color-bg-surface-hover) 50%,
+    var(--color-bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+
+/* Pokeball divider */
+.pokeball-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pokeball-divider::before,
+.pokeball-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-border-subtle),
+    transparent
+  );
+}
+
+/* Active nav indicator dot */
+.nav-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-accent-red);
+  box-shadow: 0 0 6px rgba(220, 38, 38, 0.5);
+}
+
+.nav-active {
+  animation: nav-bounce 0.3s ease-out;
+}
+
+/* ===================================================
+   ACCESSIBILITY — Reduced Motion
+   =================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

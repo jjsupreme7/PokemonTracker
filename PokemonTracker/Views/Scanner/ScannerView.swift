@@ -62,7 +62,7 @@ struct ScannerView: View {
         HStack(spacing: 12) {
             Image(systemName: "camera.viewfinder")
                 .font(.title)
-                .foregroundColor(Color.pokemon.primary)
+                .foregroundColor(Color.pokemon.gold)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text("Scan Pokemon Cards")
@@ -128,7 +128,7 @@ struct ScannerView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "camera.fill")
                         .font(.system(size: 48))
-                        .foregroundColor(Color.pokemon.primary.opacity(0.5))
+                        .foregroundColor(Color.pokemon.primary.opacity(0.4))
 
                     Text("Position card here")
                         .font(.subheadline)
@@ -386,7 +386,7 @@ struct TipRow: View {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.caption)
-                .foregroundColor(Color.pokemon.primary)
+                .foregroundColor(Color.pokemon.gold)
                 .frame(width: 16)
 
             Text(text)

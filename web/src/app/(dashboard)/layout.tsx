@@ -19,17 +19,17 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-xl border-b border-border-subtle">
+      <header className="sticky top-0 z-40 bg-bg-primary/80 backdrop-blur-xl border-b border-accent-red/10">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <PokeballIcon className="w-6 h-6 text-accent-green" />
-            <span className="text-lg font-bold text-text-primary">Pokemon Tracker</span>
+            <PokeballIcon className="w-7 h-7" filled />
+            <span className="text-lg font-heading font-bold text-text-primary">Pokemon Tracker</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/search" className="p-2 rounded-lg hover:bg-bg-surface transition-colors">
+            <Link href="/search" className="btn-press p-2 rounded-lg hover:bg-bg-surface transition-colors">
               <SearchIcon className="w-5 h-5 text-text-secondary" />
             </Link>
-            <button className="p-2 rounded-lg hover:bg-bg-surface transition-colors">
+            <button className="btn-press p-2 rounded-lg hover:bg-bg-surface transition-colors">
               <MenuIcon className="w-5 h-5 text-text-secondary" />
             </button>
           </div>

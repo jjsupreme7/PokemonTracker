@@ -118,7 +118,7 @@ struct FeaturedCardView: View {
                 Text(card.formattedPrice)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(Color.pokemon.primary)
+                    .foregroundColor(Color.pokemon.gold)
             }
             .frame(width: 120, alignment: .leading)
         }
@@ -174,7 +174,7 @@ struct MarketSignalCard: View {
                     Text(card.formattedPrice)
                         .font(.title3)
                         .fontWeight(.bold)
-                        .foregroundColor(Color.pokemon.textPrimary)
+                        .foregroundColor(Color.pokemon.gold)
 
                     let isPositive = priceChange >= 0
                     HStack(spacing: 2) {
@@ -263,7 +263,7 @@ struct ScrollToTopButton: View {
                 .frame(width: 50, height: 50)
                 .background(Color.pokemon.primary)
                 .clipShape(Circle())
-                .shadow(color: Color.pokemon.primary.opacity(0.4), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.pokemon.primary.opacity(0.3), radius: 8, x: 0, y: 4)
         }
     }
 }

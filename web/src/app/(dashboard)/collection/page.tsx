@@ -41,10 +41,10 @@ export default async function CollectionPage() {
   const uniqueChartData = Array.from(chartDataMap.values());
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in-up">
       {/* Portfolio Value Header */}
       <div>
-        <p className="text-4xl font-bold text-text-primary">
+        <p className="text-4xl font-heading font-extrabold text-text-primary">
           ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </p>
         {totalValue > 0 && (
@@ -60,7 +60,7 @@ export default async function CollectionPage() {
       </div>
 
       {/* Portfolio Chart */}
-      <div className="bg-bg-surface rounded-xl border border-border-subtle p-4">
+      <div className="bg-bg-surface rounded-xl border border-border-subtle p-4 gradient-border">
         <PortfolioChart data={uniqueChartData} />
       </div>
 
@@ -71,7 +71,7 @@ export default async function CollectionPage() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-sm font-semibold text-text-primary">
+            <h2 className="text-sm font-heading font-semibold text-text-primary">
               My Cards ({cards?.length || 0})
             </h2>
             <p className="text-[10px] text-text-secondary">
@@ -85,27 +85,27 @@ export default async function CollectionPage() {
         </div>
 
         {!cards || cards.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-accent-green-dim flex items-center justify-center">
-              <span className="text-3xl">+</span>
+          <div className="text-center py-16 animate-fade-in-up">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-accent-gold-dim flex items-center justify-center">
+              <span className="text-3xl text-accent-gold">+</span>
             </div>
-            <h2 className="text-xl font-semibold text-text-primary mb-2">No cards yet</h2>
+            <h2 className="text-xl font-heading font-semibold text-text-primary mb-2">No cards yet</h2>
             <p className="text-sm text-text-secondary mb-6">
               Start building your collection by searching for cards.
             </p>
             <Link
               href="/search"
-              className="inline-block px-6 py-3 bg-accent-green text-white font-semibold rounded-xl hover:bg-accent-green/90 transition-colors"
+              className="inline-block px-6 py-3 bg-accent-red text-white font-semibold rounded-xl btn-pokeball"
             >
               Search Cards
             </Link>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2 stagger-children">
             {cards.map((card) => (
               <div
                 key={card.id}
-                className="flex items-center gap-3 p-3 bg-bg-surface rounded-xl border border-border-subtle"
+                className="flex items-center gap-3 p-3 bg-bg-surface rounded-xl border border-border-subtle card-holo-shimmer animate-fade-in-up"
               >
                 <div className="w-12 h-16 relative flex-shrink-0 rounded overflow-hidden">
                   {card.image_small ? (
@@ -126,11 +126,11 @@ export default async function CollectionPage() {
                   <p className="text-sm font-medium text-text-primary truncate">{card.name}</p>
                   <p className="text-xs text-text-secondary truncate">{card.set_name}</p>
                   {card.rarity && (
-                    <p className="text-[10px] text-text-tertiary">{card.rarity}</p>
+                    <p className="text-[10px] text-accent-gold">{card.rarity}</p>
                   )}
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-semibold text-text-primary">
+                  <p className="text-sm font-semibold text-accent-gold">
                     ${(card.current_price || 0).toFixed(2)}
                   </p>
                   <p className="text-[10px] text-text-secondary">&times;{card.quantity}</p>

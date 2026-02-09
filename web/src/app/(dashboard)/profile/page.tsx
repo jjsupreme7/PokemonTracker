@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { SignOutButton } from '@/components/auth/SignOutButton';
-import { UserIcon, ChevronRightIcon } from '@/components/icons';
+import { PokeballIcon, ChevronRightIcon } from '@/components/icons';
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -13,18 +13,18 @@ export default async function ProfilePage() {
     .single();
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-bold text-text-primary">Profile</h1>
+    <div className="space-y-6 animate-fade-in-up">
+      <h1 className="text-xl font-heading font-bold text-text-primary">Profile</h1>
 
       <div className="space-y-3">
         {/* Profile Card */}
         <div className="p-5 bg-bg-surface rounded-xl border border-border-subtle">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-accent-green-dim rounded-full flex items-center justify-center">
-              <UserIcon className="w-8 h-8 text-accent-green" />
+            <div className="w-16 h-16 bg-accent-red-dim rounded-full flex items-center justify-center">
+              <PokeballIcon className="w-8 h-8" filled />
             </div>
             <div>
-              <p className="text-lg font-semibold text-text-primary">
+              <p className="text-lg font-heading font-semibold text-text-primary">
                 {profile?.display_name || profile?.username || 'Trainer'}
               </p>
               <p className="text-sm text-text-secondary">{user?.email}</p>
@@ -33,7 +33,7 @@ export default async function ProfilePage() {
 
           <div className="space-y-0">
             <ProfileRow label="Account Tier">
-              <span className="px-3 py-1 bg-accent-green-dim text-accent-green rounded-full text-sm font-medium capitalize">
+              <span className="px-3 py-1 bg-accent-gold-dim text-accent-gold rounded-full text-sm font-medium capitalize">
                 {profile?.tier || 'free'}
               </span>
             </ProfileRow>
@@ -79,7 +79,7 @@ function ProfileRow({ label, children, last }: { label: string; children: React.
 
 function SettingsLink({ label, last }: { label: string; last?: boolean }) {
   return (
-    <button className={`w-full flex items-center justify-between px-4 py-3.5 hover:bg-bg-surface-hover transition-colors ${!last ? 'border-b border-border-subtle' : ''}`}>
+    <button className={`btn-press w-full flex items-center justify-between px-4 py-3.5 hover:bg-bg-surface-hover transition-colors ${!last ? 'border-b border-border-subtle' : ''}`}>
       <span className="text-text-primary text-sm">{label}</span>
       <ChevronRightIcon className="w-4 h-4 text-text-tertiary" />
     </button>

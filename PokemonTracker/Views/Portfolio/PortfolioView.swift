@@ -97,7 +97,7 @@ struct PortfolioView: View {
         .frame(maxWidth: .infinity)
         .background(
             LinearGradient(
-                colors: [Color.pokemon.primary.opacity(0.3), Color.pokemon.surface],
+                colors: [Color.pokemon.primary.opacity(0.2), Color.pokemon.gold.opacity(0.1), Color.pokemon.surface],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -113,21 +113,21 @@ struct PortfolioView: View {
                 title: "Total Cards",
                 value: "\(totalCards)",
                 icon: "square.stack.fill",
-                color: Color.blue
+                color: Color.pokemon.gold
             )
 
             StatCard(
                 title: "Unique",
                 value: "\(collection.count)",
                 icon: "sparkles",
-                color: Color.purple
+                color: Color.pokemon.primary
             )
 
             StatCard(
                 title: "Cost Basis",
                 value: String(format: "$%.0f", totalCost),
                 icon: "dollarsign.circle.fill",
-                color: Color.green
+                color: Color.pokemon.gold
             )
         }
     }
@@ -176,7 +176,7 @@ struct PortfolioView: View {
         VStack(spacing: 16) {
             Image(systemName: "folder.badge.plus")
                 .font(.system(size: 48))
-                .foregroundColor(Color.pokemon.primary)
+                .foregroundColor(Color.pokemon.gold)
 
             Text("No Cards Yet")
                 .font(.title2)
@@ -288,8 +288,8 @@ struct PortfolioCardRow: View {
                         .font(.caption)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color.pokemon.primary.opacity(0.2))
-                        .foregroundColor(Color.pokemon.primary)
+                        .background(Color.pokemon.gold.opacity(0.2))
+                        .foregroundColor(Color.pokemon.gold)
                         .cornerRadius(4)
 
                     if let rarity = card.rarity {

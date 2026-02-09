@@ -26,14 +26,18 @@ struct RegisterView: View {
                 VStack(spacing: 32) {
                     // Header
                     VStack(spacing: 16) {
-                        Image(systemName: "person.badge.plus")
+                        Image(systemName: "circle.circle.fill")
                             .font(.system(size: 50))
                             .foregroundColor(.theme.primary)
 
-                        Text("Create Account")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.theme.textPrimary)
+                        HStack(spacing: 8) {
+                            Text("Pokemon")
+                                .foregroundColor(.theme.primary)
+                            Text("Tracker")
+                                .foregroundColor(.theme.gold)
+                        }
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
 
                         Text("Join to track and sync your collection")
                             .font(.subheadline)

@@ -139,7 +139,7 @@ struct AlertRowView: View {
                     Text(alert.alertType == "above" ? "Above" : "Below")
                         .foregroundColor(.theme.textSecondary)
                     Text("$\(alert.targetPrice, specifier: "%.2f")")
-                        .foregroundColor(.theme.primary)
+                        .foregroundColor(.theme.gold)
                         .fontWeight(.medium)
                 }
                 .font(.subheadline)

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { CameraCapture } from '@/components/CameraCapture';
-import { SearchIcon } from '@/components/icons';
+import { SearchIcon, PokeballIcon } from '@/components/icons';
 
 const POKETRACE_KEY = process.env.NEXT_PUBLIC_POKETRACE_API_KEY;
 
@@ -213,19 +213,19 @@ export default function ScanPage() {
   const confidenceColor = (c: string) => {
     switch (c) {
       case 'high': return 'bg-accent-green-dim text-accent-green';
-      case 'medium': return 'bg-yellow-500/10 text-yellow-500';
+      case 'medium': return 'bg-accent-gold-dim text-accent-gold';
       case 'low': return 'bg-accent-red-dim text-accent-red';
       default: return 'bg-bg-surface text-text-secondary';
     }
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-fade-in-up">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text-primary">Card Scanner</h2>
+        <h2 className="text-lg font-heading font-semibold text-text-primary">Card Scanner</h2>
         {phase !== 'idle' && (
-          <button onClick={reset} className="text-sm text-accent-green font-medium">
+          <button onClick={reset} className="text-sm text-accent-red font-medium btn-press">
             Scan Again
           </button>
         )}
@@ -239,14 +239,14 @@ export default function ScanPage() {
         />
       )}
 
-      {/* Identifying: Show preview + spinner */}
+      {/* Identifying: Show preview + pokeball spinner */}
       {(phase === 'identifying' || phase === 'searching') && imagePreview && (
         <div className="space-y-4">
           <div className="relative aspect-[2.5/3.5] max-w-[200px] mx-auto rounded-xl overflow-hidden">
             <Image src={imagePreview} alt="Scanned card" fill className="object-cover" unoptimized />
           </div>
           <div className="flex flex-col items-center gap-3 py-4">
-            <div className="w-8 h-8 border-2 border-accent-green/30 border-t-accent-green rounded-full animate-spin" />
+            <PokeballIcon className="w-10 h-10 text-accent-red animate-pokeball-wobble" />
             <p className="text-text-secondary text-sm">
               {phase === 'identifying' ? 'Identifying card...' : 'Looking up prices...'}
             </p>
@@ -256,9 +256,9 @@ export default function ScanPage() {
 
       {/* Identification Result */}
       {identification && identification.confidence !== 'none' && phase !== 'identifying' && (
-        <div className="bg-bg-surface rounded-xl p-4 border border-border-subtle space-y-3">
+        <div className="bg-bg-surface rounded-xl p-4 border border-border-subtle space-y-3 gradient-border animate-scale-in">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-text-primary">Identified Card</h3>
+            <h3 className="text-sm font-heading font-semibold text-text-primary">Identified Card</h3>
             <span className={`text-[10px] px-2 py-1 rounded-full font-medium ${confidenceColor(identification.confidence)}`}>
               {identification.confidence.charAt(0).toUpperCase() + identification.confidence.slice(1)} Confidence
             </span>
@@ -290,7 +290,7 @@ export default function ScanPage() {
           </div>
           <button
             onClick={reset}
-            className="w-full py-3 bg-bg-surface border border-border-subtle text-text-primary font-semibold rounded-xl"
+            className="w-full py-3 bg-bg-surface border border-border-subtle text-text-primary font-semibold rounded-xl btn-press"
           >
             Try Again
           </button>
@@ -303,11 +303,11 @@ export default function ScanPage() {
           <p className="text-xs text-text-secondary mb-3">
             {results.length} matching cards found — select one to add:
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 stagger-children">
             {results.map((card) => (
               <div
                 key={card.id}
-                className="bg-bg-surface rounded-xl overflow-hidden border border-border-subtle hover:border-border-subtle/80 transition-colors"
+                className="bg-bg-surface rounded-xl overflow-hidden border border-border-subtle card-holo-shimmer card-tilt animate-fade-in-up"
               >
                 <div className="aspect-[2.5/3.5] relative bg-bg-surface">
                   <Image
@@ -327,7 +327,7 @@ export default function ScanPage() {
                   <div className="mt-2">
                     {card.price > 0 ? (
                       <div>
-                        <span className="text-accent-green font-semibold text-sm">
+                        <span className="text-accent-gold font-semibold text-sm">
                           ${card.price.toFixed(2)}
                         </span>
                         <span className="text-[9px] text-text-tertiary ml-1">
@@ -335,16 +335,16 @@ export default function ScanPage() {
                         </span>
                       </div>
                     ) : (
-                      <span className="text-text-tertiary text-xs">Loading price...</span>
+                      <div className="skeleton-shimmer h-4 w-16" />
                     )}
                   </div>
                   <button
                     onClick={() => addToCollection(card)}
                     disabled={addingCard === card.poketraceId || addedCards.has(card.poketraceId)}
-                    className={`w-full mt-2 text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                    className={`btn-press w-full mt-2 text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
                       addedCards.has(card.poketraceId)
-                        ? 'bg-accent-green-dim text-accent-green'
-                        : 'bg-accent-green/10 text-accent-green hover:bg-accent-green/20'
+                        ? 'bg-accent-red-dim text-accent-red'
+                        : 'bg-accent-red/10 text-accent-red hover:bg-accent-red/20'
                     } disabled:opacity-50`}
                   >
                     {addingCard === card.poketraceId ? '...' : addedCards.has(card.poketraceId) ? 'Added' : 'Add to Collection'}
@@ -362,15 +362,15 @@ export default function ScanPage() {
           <h3 className="text-xs font-semibold text-text-secondary mb-2">Tips for best results</h3>
           <ul className="space-y-1.5 text-xs text-text-tertiary">
             <li className="flex items-center gap-2">
-              <SearchIcon className="w-3.5 h-3.5 text-accent-green" />
+              <SearchIcon className="w-3.5 h-3.5 text-accent-gold" />
               Good lighting helps accuracy
             </li>
             <li className="flex items-center gap-2">
-              <SearchIcon className="w-3.5 h-3.5 text-accent-green" />
+              <SearchIcon className="w-3.5 h-3.5 text-accent-gold" />
               Keep the card flat and centered
             </li>
             <li className="flex items-center gap-2">
-              <SearchIcon className="w-3.5 h-3.5 text-accent-green" />
+              <SearchIcon className="w-3.5 h-3.5 text-accent-gold" />
               Make sure the card name is visible
             </li>
           </ul>

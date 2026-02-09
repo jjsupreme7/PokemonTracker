@@ -87,7 +87,7 @@ struct CardDetailView: View {
         }
         .frame(maxWidth: 280)
         .cornerRadius(12)
-        .shadow(color: Color.pokemon.primary.opacity(0.3), radius: 20, x: 0, y: 10)
+        .shadow(color: Color.pokemon.gold.opacity(0.3), radius: 20, x: 0, y: 10)
     }
 
     // MARK: - Price Section
@@ -269,7 +269,7 @@ struct CardDetailView: View {
                             .foregroundColor(Color.pokemon.textSecondary)
                         Text(priceData.formattedAveragePrice)
                             .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(Color.pokemon.primary)
+                            .foregroundColor(Color.pokemon.gold)
                     }
 
                     // Price range and sample size
@@ -337,7 +337,7 @@ struct CardDetailView: View {
                                     Text(sale.formattedPrice)
                                         .font(.subheadline)
                                         .fontWeight(.semibold)
-                                        .foregroundColor(Color.pokemon.primary)
+                                        .foregroundColor(Color.pokemon.gold)
                                 }
                                 .padding(.vertical, 4)
                             }

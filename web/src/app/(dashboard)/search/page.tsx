@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
-import { SearchIcon, TrendUpIcon, TrendDownIcon } from '@/components/icons';
+import { SearchIcon, TrendUpIcon, TrendDownIcon, PokeballIcon } from '@/components/icons';
 
 const POKETRACE_KEY = process.env.NEXT_PUBLIC_POKETRACE_API_KEY;
 
@@ -201,7 +201,7 @@ export default function SearchPage() {
   const displayResults = filteredResults.length > 0 ? filteredResults : results;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-fade-in-up">
       {/* Search Bar */}
       <form onSubmit={handleSearch}>
         <div className="relative">
@@ -211,7 +211,7 @@ export default function SearchPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search Pokemon cards..."
-            className="w-full pl-11 pr-4 py-3 bg-bg-surface border border-border-subtle rounded-xl text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent-green/50 transition-colors"
+            className="w-full pl-11 pr-4 py-3 bg-bg-surface border border-border-subtle rounded-xl text-text-primary placeholder-text-tertiary focus:outline-none focus:border-accent-gold/50 transition-colors"
           />
         </div>
       </form>
@@ -222,9 +222,9 @@ export default function SearchPage() {
           <div className="flex items-center bg-bg-surface rounded-full p-1 border border-border-subtle">
             <button
               onClick={() => setActiveTab('gainers')}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              className={`btn-press flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
                 activeTab === 'gainers'
-                  ? 'bg-accent-green text-white'
+                  ? 'bg-accent-gold text-black'
                   : 'text-text-secondary hover:text-text-primary'
               }`}
             >
@@ -233,7 +233,7 @@ export default function SearchPage() {
             </button>
             <button
               onClick={() => setActiveTab('losers')}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              className={`btn-press flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
                 activeTab === 'losers'
                   ? 'bg-accent-red text-white'
                   : 'text-text-secondary hover:text-text-primary'
@@ -243,7 +243,7 @@ export default function SearchPage() {
               Top Losers
             </button>
           </div>
-          <span className="text-xs text-accent-green font-medium">
+          <span className="text-xs text-accent-red font-medium">
             View All &rsaquo;
           </span>
         </div>
@@ -257,7 +257,7 @@ export default function SearchPage() {
 
       {/* Results Grid */}
       {displayResults.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 stagger-children">
           {displayResults.map((card) => {
             const change = getChangePercent(card);
             const isPositive = change >= 0;
@@ -265,7 +265,7 @@ export default function SearchPage() {
             return (
               <div
                 key={card.id}
-                className="bg-bg-surface rounded-xl overflow-hidden border border-border-subtle hover:border-border-subtle/80 transition-colors"
+                className="bg-bg-surface rounded-xl overflow-hidden border border-border-subtle card-holo-shimmer card-tilt animate-fade-in-up"
               >
                 <div className="aspect-[2.5/3.5] relative bg-bg-surface">
                   <Image
@@ -285,7 +285,7 @@ export default function SearchPage() {
                   <div className="flex justify-between items-center mt-2">
                     {card.price > 0 ? (
                       <div>
-                        <span className="text-accent-green font-semibold text-sm">
+                        <span className="text-accent-gold font-semibold text-sm">
                           ${card.price.toFixed(2)}
                         </span>
                         <span className="text-[9px] text-text-tertiary ml-1">
@@ -293,9 +293,7 @@ export default function SearchPage() {
                         </span>
                       </div>
                     ) : (
-                      <span className="text-text-tertiary text-xs">
-                        {loading ? '...' : 'No price'}
-                      </span>
+                      <div className="skeleton-shimmer h-4 w-16" />
                     )}
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
                       isPositive
@@ -308,10 +306,10 @@ export default function SearchPage() {
                   <button
                     onClick={() => addToCollection(card)}
                     disabled={addingCard === card.poketraceId || addedCards.has(card.poketraceId)}
-                    className={`w-full mt-2 text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
+                    className={`btn-press w-full mt-2 text-xs px-3 py-2 rounded-lg font-medium transition-colors ${
                       addedCards.has(card.poketraceId)
-                        ? 'bg-accent-green-dim text-accent-green'
-                        : 'bg-accent-green/10 text-accent-green hover:bg-accent-green/20'
+                        ? 'bg-accent-red-dim text-accent-red'
+                        : 'bg-accent-red/10 text-accent-red hover:bg-accent-red/20'
                     } disabled:opacity-50`}
                   >
                     {addingCard === card.poketraceId ? '...' : addedCards.has(card.poketraceId) ? 'Added' : 'Add to Collection'}
@@ -324,8 +322,9 @@ export default function SearchPage() {
       )}
 
       {loading && (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-2 border-accent-green/30 border-t-accent-green rounded-full animate-spin" />
+        <div className="flex flex-col items-center gap-3 py-12">
+          <PokeballIcon className="w-10 h-10 text-accent-red animate-pokeball-wobble" />
+          <p className="text-text-secondary text-sm">Searching...</p>
         </div>
       )}
 
@@ -336,7 +335,7 @@ export default function SearchPage() {
       )}
 
       {!query && !loading && (
-        <div className="text-center py-16">
+        <div className="text-center py-16 animate-fade-in-up">
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-bg-surface flex items-center justify-center">
             <SearchIcon className="w-10 h-10 text-text-tertiary" />
           </div>

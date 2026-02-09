@@ -42,14 +42,14 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in-up">
       {/* Market Overview Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-text-primary">Market Overview</h1>
+          <h1 className="text-xl font-heading font-bold text-text-primary">Market Overview</h1>
           <div className="flex items-center gap-2 mt-1">
             {totalCards > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-green-dim text-accent-green text-xs font-medium">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-gold-dim text-accent-gold text-xs font-medium">
                 <TrendUpIcon className="w-3 h-3" />
                 Tracking
               </span>
@@ -59,9 +59,9 @@ export default async function DashboardPage() {
       </div>
 
       {/* Total Tracked Value */}
-      <div className="p-5 rounded-2xl bg-bg-surface border border-border-subtle">
+      <div className="p-5 rounded-2xl bg-bg-surface gradient-border sparkle-container">
         <p className="text-xs text-text-secondary mb-1 uppercase tracking-wider">Total Tracked Value</p>
-        <p className="text-4xl font-bold text-text-primary mb-3">
+        <p className="text-4xl font-heading font-extrabold text-text-primary mb-3">
           {formatValue(totalValue)}
         </p>
         {/* Percentage Pills */}
@@ -81,9 +81,9 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stat Cards Grid */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 stagger-children">
         <StatCard
-          color="green"
+          color="gold"
           label="Cards Tracked"
           value={totalCards.toLocaleString()}
           sub={`${uniqueSets} sets`}
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
       {totalCards > 0 && (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-semibold text-text-primary">Market Movement</h2>
+            <h2 className="text-sm font-heading font-semibold text-text-primary">Market Movement</h2>
           </div>
           <div className="flex h-2 rounded-full overflow-hidden bg-bg-surface">
             {upPercent > 0 && (
@@ -146,17 +146,17 @@ export default async function DashboardPage() {
       {recentCards && recentCards.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-text-primary">Recent Additions</h2>
-            <Link href="/collection" className="text-xs text-accent-green font-medium flex items-center gap-0.5">
+            <h2 className="text-sm font-heading font-semibold text-text-primary">Recent Additions</h2>
+            <Link href="/collection" className="text-xs text-accent-red font-medium flex items-center gap-0.5">
               View All
               <ChevronRightIcon className="w-3 h-3" />
             </Link>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 stagger-children">
             {recentCards.map((card) => (
               <div
                 key={card.id}
-                className="flex items-center gap-3 p-3 bg-bg-surface rounded-xl border border-border-subtle"
+                className="flex items-center gap-3 p-3 bg-bg-surface rounded-xl border border-border-subtle card-holo-shimmer animate-fade-in-up"
               >
                 {card.image_small ? (
                   <img
@@ -174,7 +174,7 @@ export default async function DashboardPage() {
                   <p className="text-xs text-text-secondary truncate">{card.set_name}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-text-primary">
+                  <p className="text-sm font-semibold text-accent-gold">
                     ${(card.current_price || 0).toFixed(2)}
                   </p>
                   <p className="text-xs text-text-secondary">&times;{card.quantity}</p>
@@ -187,17 +187,17 @@ export default async function DashboardPage() {
 
       {/* Empty State */}
       {(!recentCards || recentCards.length === 0) && (
-        <div className="text-center py-16">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-accent-green-dim flex items-center justify-center">
-            <TrendUpIcon className="w-10 h-10 text-accent-green" />
+        <div className="text-center py-16 animate-fade-in-up">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-accent-gold-dim flex items-center justify-center">
+            <TrendUpIcon className="w-10 h-10 text-accent-gold" />
           </div>
-          <h3 className="text-xl font-semibold text-text-primary mb-2">Start Your Collection</h3>
+          <h3 className="text-xl font-heading font-semibold text-text-primary mb-2">Start Your Collection</h3>
           <p className="text-sm text-text-secondary mb-6 max-w-xs mx-auto">
             Scan your first Pokemon card or search for cards to add to your portfolio.
           </p>
           <Link
             href="/search"
-            className="inline-block px-6 py-3 bg-accent-green text-white font-semibold rounded-xl hover:bg-accent-green/90 transition-colors"
+            className="inline-block px-6 py-3 bg-accent-red text-white font-semibold rounded-xl btn-pokeball"
           >
             Search Cards
           </Link>
@@ -208,27 +208,29 @@ export default async function DashboardPage() {
 }
 
 function StatCard({ color, label, value, sub }: {
-  color: 'green' | 'red' | 'blue';
+  color: 'gold' | 'green' | 'red' | 'blue';
   label: string;
   value: string;
   sub: string;
 }) {
   const borderColor = {
+    gold: 'border-l-accent-gold',
     green: 'border-l-accent-green',
     red: 'border-l-accent-red',
     blue: 'border-l-accent-blue',
   }[color];
 
   const textColor = {
+    gold: 'text-accent-gold',
     green: 'text-accent-green',
     red: 'text-accent-red',
     blue: 'text-accent-blue',
   }[color];
 
   return (
-    <div className={`p-4 bg-bg-surface rounded-xl border border-border-subtle border-l-4 ${borderColor}`}>
+    <div className={`p-4 bg-bg-surface rounded-xl border border-border-subtle border-l-4 ${borderColor} card-holo-shimmer animate-fade-in-up`}>
       <p className="text-xs text-text-secondary mb-1">{label}</p>
-      <p className={`text-2xl font-bold ${textColor}`}>{value}</p>
+      <p className={`text-2xl font-heading font-bold ${textColor}`}>{value}</p>
       <p className="text-[10px] text-text-tertiary mt-0.5">{sub}</p>
     </div>
   );

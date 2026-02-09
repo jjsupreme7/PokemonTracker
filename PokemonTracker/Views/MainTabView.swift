@@ -59,13 +59,15 @@ struct MainTabView: View {
 
 extension Color {
     struct pokemon {
-        static let primary = Color(red: 45/255, green: 212/255, blue: 191/255)     // Teal green
-        static let background = Color(red: 15/255, green: 23/255, blue: 42/255)    // Navy blue (dark)
-        static let surface = Color(red: 30/255, green: 41/255, blue: 59/255)       // Navy blue (lighter)
-        static let positive = Color(red: 34/255, green: 197/255, blue: 94/255)     // Green (keep)
-        static let negative = Color(red: 239/255, green: 68/255, blue: 68/255)     // Red (keep)
+        static let primary = Color(red: 220/255, green: 38/255, blue: 38/255)      // Pokemon Red
+        static let gold = Color(red: 250/255, green: 204/255, blue: 21/255)        // Pikachu Gold
+        static let background = Color(red: 11/255, green: 14/255, blue: 26/255)    // Deep indigo
+        static let surface = Color(red: 18/255, green: 22/255, blue: 41/255)       // Warm surface
+        static let surfaceHover = Color(red: 26/255, green: 31/255, blue: 58/255)  // Hover surface
+        static let positive = Color(red: 74/255, green: 222/255, blue: 128/255)    // Bright green
+        static let negative = Color(red: 248/255, green: 113/255, blue: 113/255)   // Light red (errors)
         static let textPrimary = Color.white
-        static let textSecondary = Color(red: 148/255, green: 163/255, blue: 184/255) // Slate gray
+        static let textSecondary = Color(red: 139/255, green: 146/255, blue: 179/255) // Warm indigo gray
     }
 
     // Alias for theme (used by new views)

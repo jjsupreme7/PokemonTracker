@@ -71,7 +71,7 @@ struct ProfileView: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color.pokemon.primary, Color.pokemon.primary.opacity(0.5)],
+                            colors: [Color.pokemon.primary, Color.pokemon.primary.opacity(0.4)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -174,7 +174,7 @@ struct ProfileView: View {
                             Spacer()
                             Text(String(format: "$%.0f to go", amountNeeded))
                                 .font(.caption)
-                                .foregroundColor(Color.pokemon.primary)
+                                .foregroundColor(Color.pokemon.gold)
                         }
 
                         GeometryReader { geometry in
@@ -184,7 +184,7 @@ struct ProfileView: View {
                                     .frame(height: 8)
 
                                 RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.pokemon.primary)
+                                    .fill(Color.pokemon.gold)
                                     .frame(width: geometry.size.width * tierProgress, height: 8)
                             }
                         }

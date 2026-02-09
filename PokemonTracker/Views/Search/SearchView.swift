@@ -57,7 +57,6 @@ struct SearchView: View {
             ProgressView()
                 .scaleEffect(1.5)
                 .tint(Color.pokemon.primary)
-
             Text("Searching...")
                 .font(.subheadline)
                 .foregroundColor(Color.pokemon.textSecondary)
@@ -88,8 +87,7 @@ struct SearchView: View {
                 }
             }
             .buttonStyle(.borderedProminent)
-            .tint(Color.pokemon.primary)
-        }
+            .tint(Color.pokemon.primary)        }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -119,7 +117,7 @@ struct SearchView: View {
         VStack(spacing: 16) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 48))
-                .foregroundColor(Color.pokemon.primary)
+                .foregroundColor(Color.pokemon.gold)
 
             Text("Search Pokemon Cards")
                 .font(.headline)
@@ -217,7 +215,7 @@ struct SearchResultRow: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
                             .background(Color.pokemon.primary.opacity(0.2))
-                            .foregroundColor(Color.pokemon.primary)
+                            .foregroundColor(Color.pokemon.gold)
                             .cornerRadius(4)
                     }
 

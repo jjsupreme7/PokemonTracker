@@ -160,7 +160,7 @@ struct HomeView: View {
         .padding()
         .background(
             LinearGradient(
-                colors: [Color.pokemon.primary.opacity(0.3), Color.pokemon.surface],
+                colors: [Color.pokemon.primary.opacity(0.2), Color.pokemon.gold.opacity(0.1), Color.pokemon.surface],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -251,7 +251,7 @@ struct HomeView: View {
                 QuickActionButton(
                     title: "Search",
                     icon: "magnifyingglass",
-                    color: Color.blue
+                    color: Color.pokemon.gold
                 ) {
                     selectedTab = 1
                 }
@@ -259,7 +259,7 @@ struct HomeView: View {
                 QuickActionButton(
                     title: "Portfolio",
                     icon: "folder.fill",
-                    color: Color.green
+                    color: Color.pokemon.gold.opacity(0.8)
                 ) {
                     selectedTab = 3
                 }
@@ -295,7 +295,7 @@ struct HomeView: View {
         VStack(spacing: 16) {
             Image(systemName: "sparkles")
                 .font(.system(size: 48))
-                .foregroundColor(Color.pokemon.primary)
+                .foregroundColor(Color.pokemon.gold)
 
             Text("Start Your Collection")
                 .font(.title2)
@@ -371,7 +371,7 @@ struct RecentCardRow: View {
                 Text(card.formattedPrice)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(Color.pokemon.textPrimary)
+                    .foregroundColor(Color.pokemon.gold)
 
                 Text("×\(card.quantity)")
                     .font(.caption)
