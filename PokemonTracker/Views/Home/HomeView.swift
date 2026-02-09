@@ -171,7 +171,7 @@ struct HomeView: View {
     // MARK: - Market Movers Carousel
 
     private var marketMoversCarousel: some View {
-        CardCarousel(title: "Market Movers", showViewAll: true) {
+        CardCarousel(title: "Market Movers", showViewAll: true, viewAllAction: { selectedTab = 1 }) {
             Button { selectedTab = 1 } label: {
                 NewsAlertCard(
                     icon: "chart.line.uptrend.xyaxis",
@@ -217,7 +217,7 @@ struct HomeView: View {
     // MARK: - Trending Cards Section
 
     private var trendingCardsSection: some View {
-        CardCarousel(title: "Trending Cards", showViewAll: true) {
+        CardCarousel(title: "Trending Cards", showViewAll: true, viewAllAction: { selectedTab = 1 }) {
             ForEach(trendingCards) { card in
                 NavigationLink(destination: CardDetailView(card: card)) {
                     FeaturedCardView(
