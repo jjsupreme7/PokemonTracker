@@ -2,6 +2,8 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab = 0
+    @State private var deepLinkCard: Card?
+    @State private var isLoadingDeepLink = false
     @ObservedObject var authService = AuthService.shared
 
     var body: some View {
@@ -10,6 +12,28 @@ struct MainTabView: View {
                 authenticatedView
             } else {
                 LoginView()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .navigateToCard)) { notification in
+            if let cardId = notification.userInfo?["cardId"] as? String {
+                Task {
+                    await navigateToCard(id: cardId)
+                }
+            }
+        }
+        .fullScreenCover(item: $deepLinkCard) { card in
+            NavigationStack {
+                CardDetailView(card: card)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button {
+                                deepLinkCard = nil
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(Color.pokemon.textSecondary)
+                            }
+                        }
+                    }
             }
         }
     }
@@ -52,6 +76,21 @@ struct MainTabView: View {
                 .tag(4)
         }
         .tint(Color.pokemon.primary)
+    }
+
+    private func navigateToCard(id: String) async {
+        isLoadingDeepLink = true
+        do {
+            let card = try await PokemonTCGService.shared.getCard(id: id)
+            await MainActor.run {
+                selectedTab = 1
+                deepLinkCard = card
+                isLoadingDeepLink = false
+            }
+        } catch {
+            print("Deep link failed to load card \(id): \(error)")
+            isLoadingDeepLink = false
+        }
     }
 }
 

@@ -23,13 +23,6 @@ struct PokemonTrackerApp: App {
     var body: some Scene {
         WindowGroup {
             MainTabView()
-                .onReceive(NotificationCenter.default.publisher(for: .navigateToCard)) { notification in
-                    // Handle navigation to card from push notification
-                    if let cardId = notification.userInfo?["cardId"] as? String {
-                        print("Navigate to card: \(cardId)")
-                        // TODO: Implement deep linking to card detail
-                    }
-                }
         }
         .modelContainer(sharedModelContainer)
     }
