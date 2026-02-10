@@ -12,7 +12,7 @@ enum Config {
 
     // MARK: - Backend API
     // Your Node.js backend URL
-    static let apiBaseURL = "http://localhost:3003"
+    static let apiBaseURL = "https://pokemontracker-production.up.railway.app"
 
     // MARK: - Environment
     #if DEBUG
