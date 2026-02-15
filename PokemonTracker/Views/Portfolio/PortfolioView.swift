@@ -9,6 +9,8 @@ struct PortfolioView: View {
     @State private var sortOption: SortOption = .dateAdded
     @State private var showingDeleteAlert = false
     @State private var cardToDelete: CollectionCard?
+    @State private var selectedCard: Card?
+    @State private var isLoadingCard = false
 
     private var totalValue: Double {
         collection.reduce(0) { $0 + $1.totalValue }
@@ -61,6 +63,19 @@ struct PortfolioView: View {
             } message: {
                 Text("Are you sure you want to remove this card from your collection?")
             }
+            .navigationDestination(item: $selectedCard) { card in
+                CardDetailView(card: card)
+            }
+            .overlay {
+                if isLoadingCard {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .overlay(ProgressView().tint(Color.pokemon.primary))
+                }
+            }
+        }
+        .task {
+            await refreshMissingPrices()
         }
     }
 
@@ -158,6 +173,12 @@ struct PortfolioView: View {
         LazyVStack(spacing: 12) {
             ForEach(sortedCollection, id: \.cardId) { card in
                 PortfolioCardRow(card: card)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        Task {
+                            await loadAndNavigate(card)
+                        }
+                    }
                     .contextMenu {
                         Button(role: .destructive) {
                             cardToDelete = card
@@ -205,6 +226,56 @@ struct PortfolioView: View {
             return collection.sorted {
                 ($0.profitLossPercent ?? 0) > ($1.profitLossPercent ?? 0)
             }
+        }
+    }
+
+    // MARK: - Navigation
+
+    private func loadAndNavigate(_ collectionCard: CollectionCard) async {
+        isLoadingCard = true
+        do {
+            let card = try await PokemonTCGService.shared.searchCards(
+                name: collectionCard.name,
+                pageSize: 5
+            ).first { $0.number == collectionCard.number }
+
+            await MainActor.run {
+                if let card = card {
+                    selectedCard = card
+                }
+                isLoadingCard = false
+            }
+        } catch {
+            print("Failed to load card: \(error)")
+            await MainActor.run { isLoadingCard = false }
+        }
+    }
+
+    // MARK: - Refresh Missing Prices
+
+    private func refreshMissingPrices() async {
+        let cardsNeedingPrices = collection.filter { $0.currentPrice == nil }
+        guard !cardsNeedingPrices.isEmpty else { return }
+
+        for card in cardsNeedingPrices {
+            do {
+                if let price = try await PokeTraceService.shared.getMarketPrice(
+                    cardName: card.name,
+                    setName: card.setName,
+                    cardNumber: card.number
+                ) {
+                    await MainActor.run {
+                        card.currentPrice = price
+                        card.lastPriceUpdate = Date()
+                    }
+                }
+            } catch {
+                print("Failed to fetch price for \(card.name): \(error)")
+            }
+        }
+
+        await MainActor.run {
+            try? modelContext.save()
         }
     }
 

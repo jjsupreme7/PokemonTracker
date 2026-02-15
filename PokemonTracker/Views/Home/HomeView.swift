@@ -11,6 +11,8 @@ struct HomeView: View {
     @State private var marketMovers: MarketMoversResponse?
     @State private var isLoadingMovers = false
     @State private var selectedMoverCategory: MoverCategory = .gainers
+    @State private var selectedCard: Card?
+    @State private var isLoadingCard = false
 
     enum MoverCategory: String, CaseIterable {
         case gainers = "Gainers"
@@ -109,6 +111,16 @@ struct HomeView: View {
             .background(Color.pokemon.background)
             .navigationTitle("Pokemon Tracker")
             .preferredColorScheme(.dark)
+            .navigationDestination(item: $selectedCard) { card in
+                CardDetailView(card: card)
+            }
+            .overlay {
+                if isLoadingCard {
+                    Color.black.opacity(0.3)
+                        .ignoresSafeArea()
+                        .overlay(ProgressView().tint(Color.pokemon.primary))
+                }
+            }
             .task {
                 await loadMarketMovers()
                 await loadTrendingCards()
@@ -163,6 +175,44 @@ struct HomeView: View {
         } catch {
             await MainActor.run { isLoading = false }
             print("Failed to load trending cards: \(error)")
+        }
+    }
+
+    // MARK: - Card Navigation
+
+    private func loadMarketMoverCard(_ moverCard: MarketMoverCard) async {
+        isLoadingCard = true
+        do {
+            let cards = try await PokemonTCGService.shared.searchCards(
+                name: moverCard.name,
+                pageSize: 5
+            )
+            let match = cards.first { $0.id == moverCard.cardId } ?? cards.first
+            await MainActor.run {
+                if let match = match { selectedCard = match }
+                isLoadingCard = false
+            }
+        } catch {
+            print("Failed to load market mover card: \(error)")
+            await MainActor.run { isLoadingCard = false }
+        }
+    }
+
+    private func loadRecentCard(_ collectionCard: CollectionCard) async {
+        isLoadingCard = true
+        do {
+            let cards = try await PokemonTCGService.shared.searchCards(
+                name: collectionCard.name,
+                pageSize: 5
+            )
+            let match = cards.first { $0.number == collectionCard.number } ?? cards.first
+            await MainActor.run {
+                if let match = match { selectedCard = match }
+                isLoadingCard = false
+            }
+        } catch {
+            print("Failed to load recent card: \(error)")
+            await MainActor.run { isLoadingCard = false }
         }
     }
 
@@ -304,11 +354,14 @@ struct HomeView: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        ForEach(currentMoverCards) { card in
+                        ForEach(currentMoverCards) { moverCard in
                             MarketMoverCardView(
-                                card: card,
+                                card: moverCard,
                                 category: selectedMoverCategory
                             )
+                            .onTapGesture {
+                                Task { await loadMarketMoverCard(moverCard) }
+                            }
                         }
                     }
                 }
@@ -393,8 +446,12 @@ struct HomeView: View {
                 .foregroundColor(Color.pokemon.primary)
             }
 
-            ForEach(collection.prefix(3), id: \.cardId) { card in
-                RecentCardRow(card: card)
+            ForEach(collection.prefix(3), id: \.cardId) { collectionCard in
+                RecentCardRow(card: collectionCard)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        Task { await loadRecentCard(collectionCard) }
+                    }
             }
         }
     }

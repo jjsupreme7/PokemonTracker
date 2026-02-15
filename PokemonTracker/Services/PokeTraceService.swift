@@ -49,10 +49,22 @@ actor PokeTraceService {
         guard let httpResponse = response as? HTTPURLResponse,
               (200...299).contains(httpResponse.statusCode) else {
             let httpResponse = response as? HTTPURLResponse
-            throw PokeTraceError.apiError(statusCode: httpResponse?.statusCode ?? 500)
+            let code = httpResponse?.statusCode ?? 500
+            print("[PokeTrace] API error: HTTP \(code)")
+            throw PokeTraceError.apiError(statusCode: code)
         }
 
-        let result = try JSONDecoder().decode(PokeTraceResponse.self, from: data)
+        let result: PokeTraceResponse
+        do {
+            result = try JSONDecoder().decode(PokeTraceResponse.self, from: data)
+            print("[PokeTrace] Decoded \(result.data.count) cards")
+        } catch {
+            print("[PokeTrace] JSON decode error: \(error)")
+            if let raw = String(data: data.prefix(500), encoding: .utf8) {
+                print("[PokeTrace] Raw response: \(raw)")
+            }
+            throw error
+        }
 
         // Find the best match
         let match = findBestMatch(
@@ -86,7 +98,7 @@ actor PokeTraceService {
         // Try exact name + number match first
         if let number = cardNumber {
             for card in cards {
-                if card.name.lowercased() == nameLower && card.cardNumber.contains(number) {
+                if card.name.lowercased() == nameLower && (card.cardNumber?.contains(number) == true) {
                     return card
                 }
             }
@@ -127,8 +139,8 @@ struct PokeTracePagination: Codable {
 struct PokeTraceCard: Codable {
     let id: String
     let name: String
-    let cardNumber: String
-    let set: PokeTraceSet
+    let cardNumber: String?
+    let set: PokeTraceSet?
     let variant: String?
     let rarity: String?
     let image: String?
@@ -170,8 +182,8 @@ struct PokeTraceCard: Codable {
 }
 
 struct PokeTraceSet: Codable {
-    let slug: String
-    let name: String
+    let slug: String?
+    let name: String?
 }
 
 struct PokeTracePrices: Codable {

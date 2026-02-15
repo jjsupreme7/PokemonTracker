@@ -12,7 +12,7 @@ struct CardDetailView: View {
 
     // PokeTrace pricing state
     @State private var pokeTraceCard: PokeTraceCard?
-    @State private var isLoadingPrices = false
+    @State private var isLoadingPrices = true
     @State private var priceError: String?
 
     var body: some View {
@@ -325,10 +325,13 @@ struct CardDetailView: View {
     // MARK: - Load PokeTrace Prices
 
     private func loadPokeTracePrices() async {
-        isLoadingPrices = true
-        priceError = nil
+        await MainActor.run {
+            isLoadingPrices = true
+            priceError = nil
+        }
 
         do {
+            print("[PokeTrace] Fetching prices for: \(card.name) | Set: \(card.set.name) | Number: \(card.number)")
             let result = try await PokeTraceService.shared.fetchPrices(
                 cardName: card.name,
                 setName: card.set.name,
@@ -338,11 +341,15 @@ struct CardDetailView: View {
             await MainActor.run {
                 self.pokeTraceCard = result
                 self.isLoadingPrices = false
-                if result == nil {
+                if let r = result {
+                    print("[PokeTrace] Got price: \(r.bestPrice ?? -1) for \(r.name)")
+                } else {
                     self.priceError = "No live pricing data found"
+                    print("[PokeTrace] No matching card found")
                 }
             }
         } catch {
+            print("[PokeTrace] Error fetching prices: \(error)")
             await MainActor.run {
                 self.priceError = "Could not load live prices"
                 self.isLoadingPrices = false
