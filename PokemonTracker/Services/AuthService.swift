@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import Supabase
 
 enum AuthError: LocalizedError {
@@ -65,6 +66,47 @@ class AuthService: ObservableObject {
                 return nil
             }
         }
+    }
+
+    // MARK: - Username Auth (Simple Entry)
+
+    func signInWithUsername(_ username: String) async throws {
+        isLoading = true
+        defer { isLoading = false }
+
+        let normalized = username.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let email = "\(normalized)@pokemontracker.app"
+        let password = generatePassword(from: normalized)
+
+        // Try sign in first (existing user)
+        do {
+            let session = try await supabase.auth.signIn(email: email, password: password)
+            self.currentUser = session.user
+            self.isAuthenticated = true
+            return
+        } catch {
+            // User doesn't exist, sign up instead
+        }
+
+        // Sign up new user
+        let response = try await supabase.auth.signUp(email: email, password: password)
+        let user = response.user
+
+        // Update profile with username (profile auto-created by DB trigger)
+        try await supabase
+            .from("profiles")
+            .update(["username": normalized, "display_name": username])
+            .eq("id", value: user.id.uuidString)
+            .execute()
+
+        self.currentUser = user
+        self.isAuthenticated = true
+    }
+
+    private func generatePassword(from username: String) -> String {
+        let data = Data("pokemontracker_\(username)".utf8)
+        let hash = SHA256.hash(data: data)
+        return hash.compactMap { String(format: "%02x", $0) }.joined()
     }
 
     // MARK: - Authentication

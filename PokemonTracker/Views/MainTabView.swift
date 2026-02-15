@@ -5,10 +5,15 @@ struct MainTabView: View {
     @State private var deepLinkCard: Card?
     @State private var isLoadingDeepLink = false
     @ObservedObject var authService = AuthService.shared
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
         Group {
-            authenticatedView
+            if hasCompletedOnboarding {
+                authenticatedView
+            } else {
+                UsernameEntryView()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .navigateToCard)) { notification in
             if let cardId = notification.userInfo?["cardId"] as? String {

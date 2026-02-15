@@ -282,8 +282,43 @@ struct CardDetailView: View {
             try modelContext.save()
             addedToCollection = true
             showingAddSheet = false
+
+            // Save to Supabase in the background
+            let cardToSync = collectionCard
+            Task {
+                await saveToSupabase(cardToSync)
+            }
         } catch {
             print("Failed to save: \(error)")
+        }
+    }
+
+    private func saveToSupabase(_ card: CollectionCard) async {
+        guard AuthService.shared.isAuthenticated else { return }
+
+        let dto = CollectionCardDTO(
+            cardId: card.cardId,
+            name: card.name,
+            setId: card.setId,
+            setName: card.setName,
+            number: card.number,
+            rarity: card.rarity,
+            imageSmall: card.imageSmall,
+            imageLarge: card.imageLarge,
+            quantity: card.quantity,
+            purchasePrice: card.purchasePrice,
+            currentPrice: card.currentPrice,
+            dateAdded: ISO8601DateFormatter().string(from: card.dateAdded),
+            updatedAt: ISO8601DateFormatter().string(from: card.updatedAt)
+        )
+
+        do {
+            let response = try await APIService.shared.addCard(dto)
+            await MainActor.run {
+                card.markAsSynced(serverId: UUID(uuidString: response.data.id))
+            }
+        } catch {
+            print("Failed to sync card to Supabase: \(error)")
         }
     }
 

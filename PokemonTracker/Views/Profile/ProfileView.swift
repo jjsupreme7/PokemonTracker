@@ -6,6 +6,7 @@ struct ProfileView: View {
     @AppStorage("userName") private var userName = "Trainer"
     @AppStorage("selectedCurrency") private var selectedCurrency = "USD"
     @AppStorage("showPriceChanges") private var showPriceChanges = true
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     @ObservedObject var authService = AuthService.shared
     @ObservedObject var syncService = SyncService.shared
@@ -316,18 +317,6 @@ struct ProfileView: View {
                     .padding()
                 }
 
-                Divider().background(Color.pokemon.background)
-
-                // Email
-                HStack {
-                    Label("Email", systemImage: "envelope.fill")
-                        .foregroundColor(Color.pokemon.textPrimary)
-                    Spacer()
-                    Text(authService.currentUser?.email ?? "Unknown")
-                        .font(.caption)
-                        .foregroundColor(Color.pokemon.textSecondary)
-                }
-                .padding()
             }
             .background(Color.pokemon.surface)
             .cornerRadius(12)
@@ -373,6 +362,7 @@ struct ProfileView: View {
             Button("Sign Out", role: .destructive) {
                 Task {
                     try? await authService.signOut()
+                    hasCompletedOnboarding = false
                 }
             }
         } message: {

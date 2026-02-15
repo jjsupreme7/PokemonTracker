@@ -211,8 +211,14 @@ struct PortfolioView: View {
     // MARK: - Delete Card
 
     private func deleteCard(_ card: CollectionCard) {
+        let cardId = card.cardId
         modelContext.delete(card)
         try? modelContext.save()
+
+        // Also delete from Supabase
+        Task {
+            try? await APIService.shared.deleteCard(cardId: cardId)
+        }
     }
 }
 
