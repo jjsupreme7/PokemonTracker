@@ -8,11 +8,7 @@ struct MainTabView: View {
 
     var body: some View {
         Group {
-            if authService.isAuthenticated {
-                authenticatedView
-            } else {
-                LoginView()
-            }
+            authenticatedView
         }
         .onReceive(NotificationCenter.default.publisher(for: .navigateToCard)) { notification in
             if let cardId = notification.userInfo?["cardId"] as? String {
