@@ -1,16 +1,56 @@
 import cron from 'node-cron';
 import { config } from '../config/index.js';
 import { supabaseAdmin } from '../config/supabase.js';
-import { PokemonTCGService } from '../services/pokemon-tcg.service.js';
+
+interface PokeTraceCard {
+  id: string;
+  name: string;
+  cardNumber?: string;
+  set?: { slug?: string; name?: string };
+  prices?: {
+    tcgplayer?: PokeTraceConditions;
+    ebay?: PokeTraceConditions;
+  };
+}
+
+interface PokeTraceConditions {
+  NEAR_MINT?: PokeTracePricePoint;
+  LIGHTLY_PLAYED?: PokeTracePricePoint;
+  MODERATELY_PLAYED?: PokeTracePricePoint;
+}
+
+interface PokeTracePricePoint {
+  avg?: number;
+  low?: number;
+  high?: number;
+  saleCount?: number;
+}
+
+interface PokeTraceResponse {
+  data: PokeTraceCard[];
+}
+
+interface CollectionCardRow {
+  card_id: string;
+  name: string;
+  set_name: string | null;
+  number: string | null;
+}
 
 export class PriceUpdateJob {
-  private pokemonTCGService = new PokemonTCGService();
   private isRunning = false;
+  private readonly apiKey = config.poketrace.apiKey;
+  private readonly baseUrl = config.poketrace.baseUrl;
 
   start(): void {
     cron.schedule(config.jobs.priceUpdateCron, async () => {
       await this.run();
     });
+
+    // Run 30 seconds after startup for initial price refresh
+    setTimeout(() => {
+      this.run().catch(err => console.error('Initial price update failed:', err));
+    }, 30_000);
 
     console.log(`Price update job scheduled: ${config.jobs.priceUpdateCron}`);
   }
@@ -22,36 +62,68 @@ export class PriceUpdateJob {
     }
 
     this.isRunning = true;
-    console.log('Starting price update job');
+    console.log('Starting price update job (PokeTrace)');
 
     try {
-      // Get all unique card IDs from collections
-      const { data: cardIds, error } = await supabaseAdmin
+      // Get all unique cards from collections (need name + set for PokeTrace search)
+      const { data: cards, error } = await supabaseAdmin
         .from('collection_cards')
-        .select('card_id');
+        .select('card_id, name, set_name, number');
 
       if (error) {
         throw error;
       }
 
-      const uniqueCardIds = [...new Set(cardIds.map(c => c.card_id))];
-      console.log(`Updating prices for ${uniqueCardIds.length} cards`);
+      // Deduplicate by card_id
+      const seen = new Set<string>();
+      const uniqueCards: CollectionCardRow[] = [];
+      for (const card of cards) {
+        if (!seen.has(card.card_id)) {
+          seen.add(card.card_id);
+          uniqueCards.push(card);
+        }
+      }
 
-      // Process in batches to respect API rate limits
-      const batchSize = 50;
+      console.log(`Updating prices for ${uniqueCards.length} unique cards`);
+
       let updated = 0;
       let failed = 0;
 
-      for (let i = 0; i < uniqueCardIds.length; i += batchSize) {
-        const batch = uniqueCardIds.slice(i, i + batchSize);
-        const results = await this.processBatch(batch);
-        updated += results.updated;
-        failed += results.failed;
+      for (const card of uniqueCards) {
+        try {
+          const price = await this.fetchPokeTracePrice(card);
 
-        // Respect Pokemon TCG API rate limits (1000/day without key, 20000 with)
-        if (i + batchSize < uniqueCardIds.length) {
-          await this.delay(1000);
+          if (price !== null) {
+            // Insert price history (table may not exist yet)
+            try {
+              await supabaseAdmin.from('price_history').insert({
+                card_id: card.card_id,
+                price,
+                price_source: 'poketrace',
+              });
+            } catch {
+              // price_history table might not exist, skip
+            }
+
+            // Update current price in collection cards
+            await supabaseAdmin
+              .from('collection_cards')
+              .update({
+                current_price: price,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('card_id', card.card_id);
+
+            updated++;
+            console.log(`  Updated ${card.name}: $${price}`);
+          }
+        } catch (error) {
+          console.error(`Failed to update price for ${card.name}:`, error);
+          failed++;
         }
+
+        // Rate limit: 500ms between requests
+        await this.delay(500);
       }
 
       console.log(`Price update job completed: ${updated} updated, ${failed} failed`);
@@ -62,41 +134,82 @@ export class PriceUpdateJob {
     }
   }
 
-  private async processBatch(cardIds: string[]): Promise<{ updated: number; failed: number }> {
-    let updated = 0;
-    let failed = 0;
+  private async fetchPokeTracePrice(card: CollectionCardRow): Promise<number | null> {
+    // Build search query
+    let searchQuery = card.name;
+    if (card.set_name) {
+      searchQuery += ` ${card.set_name}`;
+    }
 
-    for (const cardId of cardIds) {
-      try {
-        const card = await this.pokemonTCGService.getCard(cardId);
-        const price = this.pokemonTCGService.extractMarketPrice(card);
+    const params = new URLSearchParams({
+      search: searchQuery,
+      limit: '10',
+    });
 
-        if (price !== null) {
-          // Insert price history
-          await supabaseAdmin.from('price_history').insert({
-            card_id: cardId,
-            price,
-            price_source: 'tcgplayer',
-          });
+    const response = await fetch(`${this.baseUrl}/cards?${params}`, {
+      headers: {
+        'x-api-key': this.apiKey,
+      },
+    });
 
-          // Update current price in collection cards
-          await supabaseAdmin
-            .from('collection_cards')
-            .update({
-              current_price: price,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('card_id', cardId);
+    if (!response.ok) {
+      throw new Error(`PokeTrace API error: ${response.status}`);
+    }
 
-          updated++;
+    const data = (await response.json()) as PokeTraceResponse;
+
+    if (!data.data || data.data.length === 0) {
+      return null;
+    }
+
+    // Find best match
+    const match = this.findBestMatch(data.data, card);
+    if (!match) return null;
+
+    // Extract best price: NM TCGPlayer > NM eBay > LP TCGPlayer > LP eBay
+    return this.extractBestPrice(match);
+  }
+
+  private findBestMatch(results: PokeTraceCard[], card: CollectionCardRow): PokeTraceCard | null {
+    const nameLower = card.name.toLowerCase();
+
+    // Try exact name + number match
+    if (card.number) {
+      for (const r of results) {
+        if (r.name.toLowerCase() === nameLower && r.cardNumber?.includes(card.number)) {
+          return r;
         }
-      } catch (error) {
-        console.error(`Failed to update price for ${cardId}:`, error);
-        failed++;
       }
     }
 
-    return { updated, failed };
+    // Try exact name match
+    for (const r of results) {
+      if (r.name.toLowerCase() === nameLower) {
+        return r;
+      }
+    }
+
+    // Try contains match
+    for (const r of results) {
+      if (r.name.toLowerCase().includes(nameLower) || nameLower.includes(r.name.toLowerCase())) {
+        return r;
+      }
+    }
+
+    // Fall back to first result
+    return results[0] ?? null;
+  }
+
+  private extractBestPrice(card: PokeTraceCard): number | null {
+    const tcg = card.prices?.tcgplayer;
+    const ebay = card.prices?.ebay;
+
+    return tcg?.NEAR_MINT?.avg
+      ?? ebay?.NEAR_MINT?.avg
+      ?? tcg?.LIGHTLY_PLAYED?.avg
+      ?? ebay?.LIGHTLY_PLAYED?.avg
+      ?? tcg?.MODERATELY_PLAYED?.avg
+      ?? null;
   }
 
   private delay(ms: number): Promise<void> {

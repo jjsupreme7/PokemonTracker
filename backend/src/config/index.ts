@@ -13,6 +13,11 @@ export const config = {
     baseUrl: 'https://api.pokemontcg.io/v2',
   },
 
+  poketrace: {
+    apiKey: process.env.POKETRACE_API_KEY || 'pc_db7f153add976df4f5e7bc490c3cb1e8b37de8339b60861e',
+    baseUrl: 'https://api.poketrace.com/v1',
+  },
+
   anthropic: {
     apiKey: process.env.ANTHROPIC_API_KEY || '',
   },
@@ -25,7 +30,7 @@ export const config = {
   },
 
   jobs: {
-    priceUpdateCron: process.env.PRICE_UPDATE_CRON || '0 */6 * * *',
+    priceUpdateCron: process.env.PRICE_UPDATE_CRON || '0 * * * *',
     alertProcessorCron: process.env.ALERT_PROCESSOR_CRON || '*/15 * * * *',
   },
 } as const;
