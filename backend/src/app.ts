@@ -10,8 +10,8 @@ export const app = express();
 app.use(helmet());
 app.use(cors());
 
-// Body parsing
-app.use(express.json());
+// Body parsing (10mb limit for base64 card images)
+app.use(express.json({ limit: '10mb' }));
 
 // Health check
 app.get('/api/health', (_req, res) => {

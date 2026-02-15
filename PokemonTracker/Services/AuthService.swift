@@ -80,15 +80,15 @@ class AuthService: ObservableObject {
             )
 
             let user = response.user
-            // Create profile if username provided
+            // Update profile with username (profile auto-created by trigger)
             if let username = username {
                 try await supabase
                     .from("profiles")
-                    .insert([
-                        "id": user.id.uuidString,
+                    .update([
                         "username": username,
                         "display_name": username
                     ])
+                    .eq("id", value: user.id.uuidString)
                     .execute()
             }
 

@@ -3,7 +3,8 @@ import AVFoundation
 
 struct ScannerView: View {
     @StateObject private var scannerService = CardScannerService()
-    @State private var showingImagePicker = false
+    @State private var showingCamera = false
+    @State private var showingPhotoLibrary = false
     @State private var selectedImage: UIImage?
     @State private var isProcessing = false
     @State private var scanResult: ScanResult?
@@ -22,8 +23,11 @@ struct ScannerView: View {
             .background(Color.pokemon.background)
             .navigationTitle("Card Scanner")
             .preferredColorScheme(.dark)
-            .sheet(isPresented: $showingImagePicker) {
-                ImagePicker(image: $selectedImage)
+            .sheet(isPresented: $showingCamera) {
+                ImagePicker(image: $selectedImage, sourceType: .camera)
+            }
+            .sheet(isPresented: $showingPhotoLibrary) {
+                ImagePicker(image: $selectedImage, sourceType: .photoLibrary)
             }
             .onChange(of: selectedImage) { _, newImage in
                 if let image = newImage {
@@ -165,7 +169,7 @@ struct ScannerView: View {
         HStack(spacing: 16) {
             // Take Photo Button
             Button {
-                showingImagePicker = true
+                showingCamera = true
             } label: {
                 HStack {
                     Image(systemName: "camera.fill")
@@ -182,7 +186,7 @@ struct ScannerView: View {
 
             // Upload Button
             Button {
-                showingImagePicker = true
+                showingPhotoLibrary = true
             } label: {
                 HStack {
                     Image(systemName: "photo.on.rectangle")
@@ -400,14 +404,15 @@ struct TipRow: View {
 
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var image: UIImage?
+    var sourceType: UIImagePickerController.SourceType = .camera
     @Environment(\.dismiss) private var dismiss
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
 
-        // Try to use camera, fall back to photo library
-        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+        // Use requested source, fall back to photo library if camera unavailable
+        if sourceType == .camera && UIImagePickerController.isSourceTypeAvailable(.camera) {
             picker.sourceType = .camera
         } else {
             picker.sourceType = .photoLibrary
