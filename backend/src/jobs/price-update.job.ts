@@ -6,6 +6,7 @@ interface PokeTraceCard {
   id: string;
   name: string;
   cardNumber?: string;
+  variant?: string;
   set?: { slug?: string; name?: string };
   prices?: {
     tcgplayer?: PokeTraceConditions;
@@ -30,11 +31,16 @@ interface PokeTraceResponse {
   data: PokeTraceCard[];
 }
 
+interface PokeTraceDetailResponse {
+  data: PokeTraceCard;
+}
+
 interface CollectionCardRow {
   card_id: string;
   name: string;
   set_name: string | null;
   number: string | null;
+  variant: string | null;
 }
 
 export class PriceUpdateJob {
@@ -65,10 +71,10 @@ export class PriceUpdateJob {
     console.log('Starting price update job (PokeTrace)');
 
     try {
-      // Get all unique cards from collections (need name + set for PokeTrace search)
+      // Get all unique cards from collections
       const { data: cards, error } = await supabaseAdmin
         .from('collection_cards')
-        .select('card_id, name, set_name, number');
+        .select('card_id, name, set_name, number, variant');
 
       if (error) {
         throw error;
@@ -134,8 +140,30 @@ export class PriceUpdateJob {
     }
   }
 
+  /** Try to fetch the exact card by its PokeTrace ID */
+  private async fetchPriceByCardId(cardId: string): Promise<number | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/cards/${cardId}`, {
+        headers: { 'x-api-key': this.apiKey },
+      });
+
+      if (!response.ok) return null;
+
+      const data = (await response.json()) as PokeTraceDetailResponse;
+      if (!data.data) return null;
+
+      return this.extractBestPrice(data.data);
+    } catch {
+      return null;
+    }
+  }
+
   private async fetchPokeTracePrice(card: CollectionCardRow): Promise<number | null> {
-    // Build search query
+    // Try direct ID fetch first (works when card_id is a PokeTrace ID)
+    const directPrice = await this.fetchPriceByCardId(card.card_id);
+    if (directPrice !== null) return directPrice;
+
+    // Fall back to search-based lookup
     let searchQuery = card.name;
     if (card.set_name) {
       searchQuery += ` ${card.set_name}`;
@@ -172,11 +200,34 @@ export class PriceUpdateJob {
 
   private findBestMatch(results: PokeTraceCard[], card: CollectionCardRow): PokeTraceCard | null {
     const nameLower = card.name.toLowerCase();
+    const variantLower = card.variant?.toLowerCase();
+
+    // Try exact name + number + variant match
+    if (card.number && variantLower) {
+      for (const r of results) {
+        if (
+          r.name.toLowerCase() === nameLower &&
+          r.cardNumber?.includes(card.number) &&
+          r.variant?.toLowerCase() === variantLower
+        ) {
+          return r;
+        }
+      }
+    }
 
     // Try exact name + number match
     if (card.number) {
       for (const r of results) {
         if (r.name.toLowerCase() === nameLower && r.cardNumber?.includes(card.number)) {
+          return r;
+        }
+      }
+    }
+
+    // Try exact name + variant match
+    if (variantLower) {
+      for (const r of results) {
+        if (r.name.toLowerCase() === nameLower && r.variant?.toLowerCase() === variantLower) {
           return r;
         }
       }

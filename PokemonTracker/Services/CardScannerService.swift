@@ -180,6 +180,7 @@ class CardScannerService: ObservableObject {
             name: result.name,
             setNumber: result.cardNumber,
             setCode: nil,
+            variant: result.variant,
             confidence: confidence
         )
     }
@@ -241,12 +242,14 @@ struct CardIdentifier {
     let name: String?
     let setNumber: String?
     let setCode: String?
+    let variant: String?
     let confidence: Float // Overall OCR confidence
 
-    init(name: String?, setNumber: String?, setCode: String?, confidence: Float = 0.8) {
+    init(name: String?, setNumber: String?, setCode: String?, variant: String? = nil, confidence: Float = 0.8) {
         self.name = name
         self.setNumber = setNumber
         self.setCode = setCode
+        self.variant = variant
         self.confidence = confidence
     }
 

@@ -207,6 +207,7 @@ struct ServerCollectionCard: Codable {
     let setName: String
     let number: String
     let rarity: String?
+    let variant: String?
     let imageSmall: String
     let imageLarge: String
     let quantity: Int
@@ -230,6 +231,7 @@ struct CollectionCardDTO: Codable {
     let setName: String
     let number: String
     let rarity: String?
+    let variant: String?
     let imageSmall: String
     let imageLarge: String
     let quantity: Int

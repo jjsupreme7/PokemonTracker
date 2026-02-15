@@ -9,6 +9,7 @@ final class CollectionCard {
     var setName: String
     var number: String
     var rarity: String?
+    var variant: String?
     var imageSmall: String
     var imageLarge: String
     var quantity: Int
@@ -31,6 +32,7 @@ final class CollectionCard {
         setName: String,
         number: String,
         rarity: String? = nil,
+        variant: String? = nil,
         imageSmall: String,
         imageLarge: String,
         quantity: Int = 1,
@@ -44,6 +46,7 @@ final class CollectionCard {
         self.setName = setName
         self.number = number
         self.rarity = rarity
+        self.variant = variant
         self.imageSmall = imageSmall
         self.imageLarge = imageLarge
         self.quantity = quantity

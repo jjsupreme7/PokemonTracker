@@ -16,9 +16,9 @@ actor PokeTraceService {
     // MARK: - Public Methods
 
     /// Search for a card and return pricing data
-    func fetchPrices(cardName: String, setName: String? = nil, cardNumber: String? = nil) async throws -> PokeTraceCard? {
+    func fetchPrices(cardName: String, setName: String? = nil, cardNumber: String? = nil, variant: String? = nil) async throws -> PokeTraceCard? {
         // Build cache key
-        let cacheKey = "\(cardName)-\(setName ?? "")-\(cardNumber ?? "")"
+        let cacheKey = "\(cardName)-\(setName ?? "")-\(cardNumber ?? "")-\(variant ?? "")"
         if let cached = priceCache[cacheKey], !cached.isExpired {
             return cached.card
         }
@@ -71,7 +71,8 @@ actor PokeTraceService {
             cards: result.data,
             name: cardName,
             setName: setName,
-            cardNumber: cardNumber
+            cardNumber: cardNumber,
+            variant: variant
         )
 
         // Cache the result
@@ -81,8 +82,8 @@ actor PokeTraceService {
     }
 
     /// Get a simple market price for a card (NM TCGPlayer price, fallback to eBay)
-    func getMarketPrice(cardName: String, setName: String? = nil, cardNumber: String? = nil) async throws -> Double? {
-        guard let card = try await fetchPrices(cardName: cardName, setName: setName, cardNumber: cardNumber) else {
+    func getMarketPrice(cardName: String, setName: String? = nil, cardNumber: String? = nil, variant: String? = nil) async throws -> Double? {
+        guard let card = try await fetchPrices(cardName: cardName, setName: setName, cardNumber: cardNumber, variant: variant) else {
             return nil
         }
         return card.bestPrice
@@ -90,15 +91,36 @@ actor PokeTraceService {
 
     // MARK: - Matching
 
-    private func findBestMatch(cards: [PokeTraceCard], name: String, setName: String?, cardNumber: String?) -> PokeTraceCard? {
+    private func findBestMatch(cards: [PokeTraceCard], name: String, setName: String?, cardNumber: String?, variant: String? = nil) -> PokeTraceCard? {
         guard !cards.isEmpty else { return nil }
 
         let nameLower = name.lowercased()
+        let variantLower = variant?.lowercased()
 
-        // Try exact name + number match first
+        // Try exact name + number + variant match
+        if let number = cardNumber, let vLower = variantLower {
+            for card in cards {
+                if card.name.lowercased() == nameLower &&
+                   (card.cardNumber?.contains(number) == true) &&
+                   card.variant?.lowercased() == vLower {
+                    return card
+                }
+            }
+        }
+
+        // Try exact name + number match
         if let number = cardNumber {
             for card in cards {
                 if card.name.lowercased() == nameLower && (card.cardNumber?.contains(number) == true) {
+                    return card
+                }
+            }
+        }
+
+        // Try exact name + variant match
+        if let vLower = variantLower {
+            for card in cards {
+                if card.name.lowercased() == nameLower && card.variant?.lowercased() == vLower {
                     return card
                 }
             }

@@ -86,6 +86,7 @@ class SyncService: ObservableObject {
                 setName: card.setName,
                 number: card.number,
                 rarity: card.rarity,
+                variant: card.variant,
                 imageSmall: card.imageSmall,
                 imageLarge: card.imageLarge,
                 quantity: card.quantity,
@@ -128,6 +129,7 @@ class SyncService: ObservableObject {
         local.quantity = server.quantity
         local.purchasePrice = server.purchasePrice
         local.currentPrice = server.currentPrice
+        local.variant = server.variant
         local.serverId = UUID(uuidString: server.id)
         local.needsSync = false
         local.lastSyncedAt = Date()
@@ -145,6 +147,7 @@ class SyncService: ObservableObject {
             setName: server.setName,
             number: server.number,
             rarity: server.rarity,
+            variant: server.variant,
             imageSmall: server.imageSmall,
             imageLarge: server.imageLarge,
             quantity: server.quantity,

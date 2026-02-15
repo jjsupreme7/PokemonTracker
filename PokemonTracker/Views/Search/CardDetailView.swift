@@ -303,6 +303,7 @@ struct CardDetailView: View {
             setName: card.setName,
             number: card.number,
             rarity: card.rarity,
+            variant: card.variant,
             imageSmall: card.imageSmall,
             imageLarge: card.imageLarge,
             quantity: card.quantity,

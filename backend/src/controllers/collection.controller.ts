@@ -9,6 +9,7 @@ const collectionCardSchema = z.object({
   set_id: z.string().min(1),
   set_name: z.string().min(1),
   number: z.string().min(1),
+  variant: z.string().nullable().optional(),
   rarity: z.string().nullable().optional(),
   image_small: z.string().url(),
   image_large: z.string().url(),
