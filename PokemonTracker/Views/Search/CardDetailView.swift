@@ -10,16 +10,10 @@ struct CardDetailView: View {
     @State private var purchasePrice = ""
     @State private var addedToCollection = false
 
-    // eBay pricing state
-    @State private var ebayPriceData: EbayPriceData?
-    @State private var isLoadingEbay = false
-    @State private var ebayError: String?
-    @State private var selectedPriceSource: PriceSource = .tcgplayer
-
-    enum PriceSource: String, CaseIterable {
-        case tcgplayer = "TCGPlayer"
-        case ebay = "eBay"
-    }
+    // PokeTrace pricing state
+    @State private var pokeTraceCard: PokeTraceCard?
+    @State private var isLoadingPrices = false
+    @State private var priceError: String?
 
     var body: some View {
         ScrollView {
@@ -27,16 +21,8 @@ struct CardDetailView: View {
                 // Card Image
                 cardImageSection
 
-                // Price Source Picker
-                priceSourcePicker
-
-                // Price Section
-                priceSection
-
-                // eBay Price Section (if selected)
-                if selectedPriceSource == .ebay {
-                    ebayPriceSection
-                }
+                // Live Price Section
+                livePriceSection
 
                 // Card Info
                 cardInfoSection
@@ -54,20 +40,8 @@ struct CardDetailView: View {
             addToCollectionSheet
         }
         .task {
-            await loadEbayPrices()
+            await loadPokeTracePrices()
         }
-    }
-
-    // MARK: - Price Source Picker
-
-    private var priceSourcePicker: some View {
-        Picker("Price Source", selection: $selectedPriceSource) {
-            ForEach(PriceSource.allCases, id: \.self) { source in
-                Text(source.rawValue).tag(source)
-            }
-        }
-        .pickerStyle(.segmented)
-        .padding(.horizontal)
     }
 
     // MARK: - Card Image
@@ -90,31 +64,108 @@ struct CardDetailView: View {
         .shadow(color: Color.pokemon.gold.opacity(0.3), radius: 20, x: 0, y: 10)
     }
 
-    // MARK: - Price Section
+    // MARK: - Live Price Section
 
-    private var priceSection: some View {
-        VStack(spacing: 12) {
-            Text("Market Price")
-                .font(.subheadline)
-                .foregroundColor(Color.pokemon.textSecondary)
+    private var livePriceSection: some View {
+        VStack(spacing: 16) {
+            // Header
+            HStack {
+                Text("Live Market Price")
+                    .font(.headline)
+                    .foregroundColor(Color.pokemon.textPrimary)
+                Spacer()
+                if isLoadingPrices {
+                    ProgressView()
+                        .tint(Color.pokemon.primary)
+                }
+            }
 
-            Text(card.formattedPrice)
-                .font(.system(size: 36, weight: .bold))
-                .foregroundColor(Color.pokemon.textPrimary)
-
-            // Price variants if available
-            if let tcgPrices = card.tcgplayer?.prices {
-                HStack(spacing: 16) {
-                    if let normal = tcgPrices.normal?.market {
-                        PriceVariantBadge(label: "Normal", price: normal)
+            if let error = priceError {
+                // Error state - fall back to Pokemon TCG API price
+                VStack(spacing: 8) {
+                    Text(card.formattedPrice)
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundColor(Color.pokemon.textPrimary)
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(Color.pokemon.textSecondary)
+                }
+            } else if let ptCard = pokeTraceCard {
+                // PokeTrace prices
+                VStack(spacing: 16) {
+                    // Main price
+                    if let bestPrice = ptCard.bestPrice {
+                        Text(String(format: "$%.2f", bestPrice))
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundColor(Color.pokemon.gold)
+                    } else {
+                        Text("N/A")
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundColor(Color.pokemon.textSecondary)
                     }
-                    if let holo = tcgPrices.holofoil?.market {
-                        PriceVariantBadge(label: "Holo", price: holo)
+
+                    // TCGPlayer + eBay side by side
+                    HStack(spacing: 20) {
+                        // TCGPlayer prices
+                        if let tcg = ptCard.prices?.tcgplayer {
+                            VStack(spacing: 8) {
+                                Text("TCGPlayer")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(Color.pokemon.primary)
+
+                                if let nm = tcg.nearMint {
+                                    ConditionPriceRow(condition: "NM", avg: nm.avg, low: nm.low, high: nm.high, sales: nm.saleCount)
+                                }
+                                if let lp = tcg.lightlyPlayed {
+                                    ConditionPriceRow(condition: "LP", avg: lp.avg, low: lp.low, high: lp.high, sales: lp.saleCount)
+                                }
+                                if let mp = tcg.moderatelyPlayed {
+                                    ConditionPriceRow(condition: "MP", avg: mp.avg, low: mp.low, high: mp.high, sales: mp.saleCount)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+
+                        // Divider
+                        Rectangle()
+                            .fill(Color.pokemon.background)
+                            .frame(width: 1)
+
+                        // eBay prices
+                        if let ebay = ptCard.prices?.ebay {
+                            VStack(spacing: 8) {
+                                Text("eBay Sold")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.blue)
+
+                                if let nm = ebay.nearMint {
+                                    ConditionPriceRow(condition: "NM", avg: nm.avg, low: nm.low, high: nm.high, sales: nm.saleCount)
+                                }
+                                if let lp = ebay.lightlyPlayed {
+                                    ConditionPriceRow(condition: "LP", avg: lp.avg, low: lp.low, high: lp.high, sales: lp.saleCount)
+                                }
+                                if let mp = ebay.moderatelyPlayed {
+                                    ConditionPriceRow(condition: "MP", avg: mp.avg, low: mp.low, high: mp.high, sales: mp.saleCount)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
                     }
-                    if let reverse = tcgPrices.reverseHolofoil?.market {
-                        PriceVariantBadge(label: "Reverse", price: reverse)
+
+                    // Sale count + last updated
+                    if ptCard.totalSaleCount > 0 {
+                        Text("Based on \(ptCard.totalSaleCount) NM sales")
+                            .font(.caption2)
+                            .foregroundColor(Color.pokemon.textSecondary)
                     }
                 }
+            } else if !isLoadingPrices {
+                // Fallback to Pokemon TCG API price
+                Text(card.formattedPrice)
+                    .font(.system(size: 36, weight: .bold))
+                    .foregroundColor(Color.pokemon.textPrimary)
             }
         }
         .padding()
@@ -219,6 +270,12 @@ struct CardDetailView: View {
             purchasePrice: price
         )
 
+        // Use PokeTrace live price if available (more reliable than Pokemon TCG API)
+        if let livePrice = pokeTraceCard?.bestPrice {
+            collectionCard.currentPrice = livePrice
+            collectionCard.lastPriceUpdate = Date()
+        }
+
         modelContext.insert(collectionCard)
 
         do {
@@ -230,187 +287,71 @@ struct CardDetailView: View {
         }
     }
 
-    // MARK: - eBay Price Section
+    // MARK: - Load PokeTrace Prices
 
-    private var ebayPriceSection: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Image(systemName: "cart.fill")
-                    .foregroundColor(.blue)
-                Text("eBay Market Data")
-                    .font(.headline)
-                    .foregroundColor(Color.pokemon.textPrimary)
-                Spacer()
-
-                if isLoadingEbay {
-                    ProgressView()
-                        .tint(Color.pokemon.primary)
-                }
-            }
-
-            if let error = ebayError {
-                HStack {
-                    Image(systemName: "exclamationmark.triangle")
-                        .foregroundColor(.orange)
-                    Text(error)
-                        .font(.caption)
-                        .foregroundColor(Color.pokemon.textSecondary)
-                }
-                .padding()
-                .background(Color.orange.opacity(0.1))
-                .cornerRadius(8)
-            } else if let priceData = ebayPriceData {
-                // Price statistics
-                VStack(spacing: 16) {
-                    // Average price (prominent)
-                    VStack(spacing: 4) {
-                        Text("Average Sold Price")
-                            .font(.caption)
-                            .foregroundColor(Color.pokemon.textSecondary)
-                        Text(priceData.formattedAveragePrice)
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(Color.pokemon.gold)
-                    }
-
-                    // Price range and sample size
-                    HStack(spacing: 20) {
-                        VStack(spacing: 4) {
-                            Text("Low")
-                                .font(.caption2)
-                                .foregroundColor(Color.pokemon.textSecondary)
-                            Text(priceData.lowestPrice.map { String(format: "$%.2f", $0) } ?? "N/A")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundColor(Color.pokemon.positive)
-                        }
-
-                        VStack(spacing: 4) {
-                            Text("Median")
-                                .font(.caption2)
-                                .foregroundColor(Color.pokemon.textSecondary)
-                            Text(priceData.medianPrice.map { String(format: "$%.2f", $0) } ?? "N/A")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundColor(Color.pokemon.textPrimary)
-                        }
-
-                        VStack(spacing: 4) {
-                            Text("High")
-                                .font(.caption2)
-                                .foregroundColor(Color.pokemon.textSecondary)
-                            Text(priceData.highestPrice.map { String(format: "$%.2f", $0) } ?? "N/A")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundColor(Color.pokemon.negative)
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    // Sample info
-                    Text("Based on \(priceData.sampleSize) listings")
-                        .font(.caption2)
-                        .foregroundColor(Color.pokemon.textSecondary)
-
-                    // Recent sales
-                    if !priceData.recentSales.isEmpty {
-                        Divider()
-                            .background(Color.pokemon.background)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Recent Listings")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                                .foregroundColor(Color.pokemon.textPrimary)
-
-                            ForEach(priceData.recentSales.prefix(5), id: \.title) { sale in
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(sale.title)
-                                            .font(.caption)
-                                            .foregroundColor(Color.pokemon.textPrimary)
-                                            .lineLimit(1)
-                                        Text(sale.condition)
-                                            .font(.caption2)
-                                            .foregroundColor(Color.pokemon.textSecondary)
-                                    }
-                                    Spacer()
-                                    Text(sale.formattedPrice)
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(Color.pokemon.gold)
-                                }
-                                .padding(.vertical, 4)
-                            }
-                        }
-                    }
-                }
-            } else if !isLoadingEbay {
-                Text("No eBay data available")
-                    .font(.subheadline)
-                    .foregroundColor(Color.pokemon.textSecondary)
-            }
-        }
-        .padding()
-        .background(Color.pokemon.surface)
-        .cornerRadius(16)
-    }
-
-    // MARK: - Load eBay Prices
-
-    private func loadEbayPrices() async {
-        isLoadingEbay = true
-        ebayError = nil
+    private func loadPokeTracePrices() async {
+        isLoadingPrices = true
+        priceError = nil
 
         do {
-            let priceData = try await EbayPriceService.shared.fetchSoldPrices(
+            let result = try await PokeTraceService.shared.fetchPrices(
                 cardName: card.name,
                 setName: card.set.name,
                 cardNumber: card.number
             )
 
             await MainActor.run {
-                self.ebayPriceData = priceData
-                self.isLoadingEbay = false
-            }
-        } catch let error as EbayError {
-            await MainActor.run {
-                if case .authenticationFailed = error {
-                    self.ebayError = "eBay API not configured. Add your API keys to enable."
-                } else {
-                    self.ebayError = error.localizedDescription
+                self.pokeTraceCard = result
+                self.isLoadingPrices = false
+                if result == nil {
+                    self.priceError = "No live pricing data found"
                 }
-                self.isLoadingEbay = false
             }
         } catch {
             await MainActor.run {
-                self.ebayError = "Failed to load eBay prices"
-                self.isLoadingEbay = false
+                self.priceError = "Could not load live prices"
+                self.isLoadingPrices = false
             }
         }
     }
 }
 
-// MARK: - Price Variant Badge
+// MARK: - Condition Price Row
 
-struct PriceVariantBadge: View {
-    let label: String
-    let price: Double
+struct ConditionPriceRow: View {
+    let condition: String
+    let avg: Double?
+    let low: Double?
+    let high: Double?
+    let sales: Int?
 
     var body: some View {
-        VStack(spacing: 4) {
-            Text(label)
+        HStack(spacing: 4) {
+            Text(condition)
                 .font(.caption2)
+                .fontWeight(.medium)
                 .foregroundColor(Color.pokemon.textSecondary)
+                .frame(width: 24, alignment: .leading)
 
-            Text(String(format: "$%.2f", price))
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundColor(Color.pokemon.textPrimary)
+            if let avg = avg {
+                Text(String(format: "$%.2f", avg))
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color.pokemon.textPrimary)
+            } else {
+                Text("N/A")
+                    .font(.caption)
+                    .foregroundColor(Color.pokemon.textSecondary)
+            }
+
+            Spacer()
+
+            if let sales = sales, sales > 0 {
+                Text("\(sales) sold")
+                    .font(.caption2)
+                    .foregroundColor(Color.pokemon.textSecondary)
+            }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Color.pokemon.background)
-        .cornerRadius(8)
     }
 }
 

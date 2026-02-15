@@ -37,7 +37,7 @@ actor PokemonTCGService {
             throw PokemonTCGError.httpError(statusCode: httpResponse.statusCode)
         }
 
-        let result = try JSONDecoder().decode(PokeTraceSearchResponse.self, from: data)
+        let result = try JSONDecoder().decode(PTSearchResponse.self, from: data)
         let cards = (result.data ?? []).filter { $0.image != nil }
         return cards.map { $0.toCard() }
     }
@@ -74,7 +74,7 @@ actor PokemonTCGService {
             throw PokemonTCGError.httpError(statusCode: httpResponse.statusCode)
         }
 
-        let result = try JSONDecoder().decode(PokeTraceDetailResponse.self, from: data)
+        let result = try JSONDecoder().decode(PTDetailResponse.self, from: data)
         return result.data.toCard()
     }
 
@@ -104,19 +104,19 @@ actor PokemonTCGService {
 
 // MARK: - PokeTrace API Response Types
 
-private struct PokeTraceSearchResponse: Codable {
-    let data: [PokeTraceCard]?
+private struct PTSearchResponse: Codable {
+    let data: [PTSearchCard]?
 }
 
-private struct PokeTraceDetailResponse: Codable {
-    let data: PokeTraceDetailCard
+private struct PTDetailResponse: Codable {
+    let data: PTDetailCard
 }
 
-private struct PokeTraceCard: Codable {
+private struct PTSearchCard: Codable {
     let id: String
     let name: String
     let cardNumber: String?
-    let set: PokeTraceSet?
+    let set: PTCardSet?
     let variant: String?
     let rarity: String?
     let image: String?
@@ -168,15 +168,15 @@ private struct PokeTraceCard: Codable {
     }
 }
 
-private struct PokeTraceDetailCard: Codable {
+private struct PTDetailCard: Codable {
     let id: String
     let name: String
     let cardNumber: String?
-    let set: PokeTraceSet?
+    let set: PTCardSet?
     let variant: String?
     let rarity: String?
     let image: String?
-    let prices: PokeTracePrices?
+    let prices: PTPrices?
 
     func toCard() -> Card {
         let setName = set?.name ?? "Unknown Set"
@@ -265,17 +265,17 @@ private struct PokeTraceDetailCard: Codable {
     }
 }
 
-private struct PokeTraceSet: Codable {
+private struct PTCardSet: Codable {
     let slug: String?
     let name: String?
 }
 
-private struct PokeTracePrices: Codable {
-    let tcgplayer: [String: PokeTracePriceEntry]?
-    let ebay: [String: PokeTracePriceEntry]?
+private struct PTPrices: Codable {
+    let tcgplayer: [String: PTPriceEntry]?
+    let ebay: [String: PTPriceEntry]?
 }
 
-private struct PokeTracePriceEntry: Codable {
+private struct PTPriceEntry: Codable {
     let avg: Double?
     let low: Double?
     let high: Double?

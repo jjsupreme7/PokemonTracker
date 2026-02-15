@@ -34,6 +34,7 @@
 		B8B8B8B8B8B8B8B8B8B8B8B8 /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8A8A8A8A8A8A8A8A8A8A8A8 /* RegisterView.swift */; };
 		B9B9B9B9B9B9B9B9B9B9B9B9 /* AlertsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A9A9A9A9A9A9A9A9A9A9A9 /* AlertsListView.swift */; };
 		E1E1E1E1E1E1E1E1E1E1E1E1 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 2B3C4D5E6F7A8B9C0D1E2F3A /* Supabase */; };
+		C0C0C0C0C0C0C0C0C0C0C0C0 /* PokeTraceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D0D0D0D0D0D0D0D0D0D0D0 /* PokeTraceService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +66,7 @@
 		A7A7A7A7A7A7A7A7A7A7A7A7 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		A8A8A8A8A8A8A8A8A8A8A8A8 /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
 		A9A9A9A9A9A9A9A9A9A9A9A9 /* AlertsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsListView.swift; sourceTree = "<group>"; };
+		D0D0D0D0D0D0D0D0D0D0D0D0 /* PokeTraceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PokeTraceService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -240,6 +242,7 @@
 				A4A4A4A4A4A4A4A4A4A4A4A4 /* AuthService.swift */,
 				55494C8E208541FD4D41C2DD /* CardScannerService.swift */,
 				A5A5A5A5A5A5A5A5A5A5A5A5 /* EbayPriceService.swift */,
+				D0D0D0D0D0D0D0D0D0D0D0D0 /* PokeTraceService.swift */,
 				C4D59C640C2210828230D9B2 /* PokemonTCGService.swift */,
 				A6A6A6A6A6A6A6A6A6A6A6A6 /* SyncService.swift */,
 			);
@@ -344,6 +347,7 @@
 				7A4A4055D668C84704891CEC /* CollectionCard.swift in Sources */,
 				B2B2B2B2B2B2B2B2B2B2B2B2 /* Config.swift in Sources */,
 				B5B5B5B5B5B5B5B5B5B5B5B5 /* EbayPriceService.swift in Sources */,
+				C0C0C0C0C0C0C0C0C0C0C0C0 /* PokeTraceService.swift in Sources */,
 				63F82B3FBD4A6026258852BF /* Extensions.swift in Sources */,
 				76FC6D31453001E9212494B3 /* HomeView.swift in Sources */,
 				B7B7B7B7B7B7B7B7B7B7B7B7 /* LoginView.swift in Sources */,
