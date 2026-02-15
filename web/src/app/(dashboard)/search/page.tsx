@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { SearchIcon, TrendUpIcon, TrendDownIcon, PokeballIcon } from '@/components/icons';
+import { CardPriceModal } from '@/components/CardPriceModal';
 
 const POKETRACE_KEY = process.env.NEXT_PUBLIC_POKETRACE_API_KEY;
 
@@ -85,6 +86,7 @@ export default function SearchPage() {
   const [addingCard, setAddingCard] = useState<string | null>(null);
   const [addedCards, setAddedCards] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<'gainers' | 'losers'>('gainers');
+  const [selectedCard, setSelectedCard] = useState<DisplayCard | null>(null);
   const supabase = createClient();
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -170,6 +172,7 @@ export default function SearchPage() {
       set_id: card.setId,
       set_name: card.setName,
       number: card.number,
+      variant: card.variant,
       rarity: card.rarity,
       image_small: card.imageSmall,
       image_large: card.imageLarge,
@@ -267,18 +270,28 @@ export default function SearchPage() {
                 key={card.id}
                 className="bg-bg-surface rounded-xl overflow-hidden border border-border-subtle card-holo-shimmer card-tilt animate-fade-in-up"
               >
-                <div className="aspect-[2.5/3.5] relative bg-bg-surface">
-                  <Image
-                    src={card.imageSmall}
-                    alt={card.name}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                    unoptimized
-                  />
+                <div
+                  className="cursor-pointer"
+                  onClick={() => setSelectedCard(card)}
+                >
+                  <div className="aspect-[2.5/3.5] relative bg-bg-surface">
+                    <Image
+                      src={card.imageSmall}
+                      alt={card.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                      unoptimized
+                    />
+                  </div>
                 </div>
                 <div className="p-3">
-                  <p className="text-sm font-medium text-text-primary truncate">{card.name}</p>
+                  <p
+                    className="text-sm font-medium text-text-primary truncate cursor-pointer hover:text-accent-gold transition-colors"
+                    onClick={() => setSelectedCard(card)}
+                  >
+                    {card.name}
+                  </p>
                   <p className="text-[10px] text-text-secondary truncate">
                     {card.setName} &middot; {card.variant}
                   </p>
@@ -341,6 +354,23 @@ export default function SearchPage() {
           </div>
           <p className="text-text-secondary text-sm">Search for Pokemon cards to add to your collection</p>
         </div>
+      )}
+
+      {selectedCard && (
+        <CardPriceModal
+          card={{
+            card_id: selectedCard.poketraceId,
+            name: selectedCard.name,
+            set_name: selectedCard.setName,
+            number: selectedCard.number,
+            variant: selectedCard.variant,
+            rarity: selectedCard.rarity ?? undefined,
+            image_small: selectedCard.imageSmall,
+            image_large: selectedCard.imageLarge,
+            current_price: selectedCard.price,
+          }}
+          onClose={() => setSelectedCard(null)}
+        />
       )}
     </div>
   );

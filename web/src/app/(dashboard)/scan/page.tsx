@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { CameraCapture } from '@/components/CameraCapture';
+import { CardPriceModal } from '@/components/CardPriceModal';
 import { SearchIcon, PokeballIcon } from '@/components/icons';
 
 const POKETRACE_KEY = process.env.NEXT_PUBLIC_POKETRACE_API_KEY;
@@ -72,6 +73,7 @@ export default function ScanPage() {
   const [error, setError] = useState<string | null>(null);
   const [addingCard, setAddingCard] = useState<string | null>(null);
   const [addedCards, setAddedCards] = useState<Set<string>>(new Set());
+  const [selectedCard, setSelectedCard] = useState<DisplayCard | null>(null);
   const supabase = createClient();
 
   const handleCapture = async (base64: string, mimeType: string) => {
@@ -105,8 +107,9 @@ export default function ScanPage() {
 
       // Step 2: Search PokeTrace for the identified card
       setPhase('searching');
+      const searchQuery = [id.name, id.set].filter(Boolean).join(' ');
       const searchRes = await fetch(
-        `https://api.poketrace.com/v1/cards?search=${encodeURIComponent(id.name)}&limit=20`,
+        `https://api.poketrace.com/v1/cards?search=${encodeURIComponent(searchQuery)}&limit=20`,
         { headers: { 'X-API-Key': POKETRACE_KEY || '' } }
       );
       const searchData = await searchRes.json();
@@ -135,12 +138,16 @@ export default function ScanPage() {
         priceSource: '',
       }));
 
-      // If Claude identified a card number, move matching cards to the top
-      if (id.cardNumber) {
+      // Sort results: prioritize matches by card number and variant
+      if (id.cardNumber || id.variant) {
         displayCards.sort((a, b) => {
-          const aMatch = a.number.startsWith(id.cardNumber!) ? 0 : 1;
-          const bMatch = b.number.startsWith(id.cardNumber!) ? 0 : 1;
-          return aMatch - bMatch;
+          const aNumMatch = id.cardNumber && a.number.startsWith(id.cardNumber) ? 0 : 1;
+          const bNumMatch = id.cardNumber && b.number.startsWith(id.cardNumber) ? 0 : 1;
+          if (aNumMatch !== bNumMatch) return aNumMatch - bNumMatch;
+
+          const aVarMatch = id.variant && a.variant?.toLowerCase() === id.variant.toLowerCase() ? 0 : 1;
+          const bVarMatch = id.variant && b.variant?.toLowerCase() === id.variant.toLowerCase() ? 0 : 1;
+          return aVarMatch - bVarMatch;
         });
       }
 
@@ -187,6 +194,7 @@ export default function ScanPage() {
       set_id: card.setId,
       set_name: card.setName,
       number: card.number,
+      variant: card.variant,
       rarity: card.rarity,
       image_small: card.imageSmall,
       image_large: card.imageLarge,
@@ -309,7 +317,10 @@ export default function ScanPage() {
                 key={card.id}
                 className="bg-bg-surface rounded-xl overflow-hidden border border-border-subtle card-holo-shimmer card-tilt animate-fade-in-up"
               >
-                <div className="aspect-[2.5/3.5] relative bg-bg-surface">
+                <div
+                  className="aspect-[2.5/3.5] relative bg-bg-surface cursor-pointer"
+                  onClick={() => setSelectedCard(card)}
+                >
                   <Image
                     src={card.imageSmall}
                     alt={card.name}
@@ -320,7 +331,12 @@ export default function ScanPage() {
                   />
                 </div>
                 <div className="p-3">
-                  <p className="text-sm font-medium text-text-primary truncate">{card.name}</p>
+                  <p
+                    className="text-sm font-medium text-text-primary truncate cursor-pointer hover:text-accent-gold transition-colors"
+                    onClick={() => setSelectedCard(card)}
+                  >
+                    {card.name}
+                  </p>
                   <p className="text-[10px] text-text-secondary truncate">
                     {card.setName} &middot; {card.variant}
                   </p>
@@ -375,6 +391,23 @@ export default function ScanPage() {
             </li>
           </ul>
         </div>
+      )}
+
+      {selectedCard && (
+        <CardPriceModal
+          card={{
+            card_id: selectedCard.poketraceId,
+            name: selectedCard.name,
+            set_name: selectedCard.setName,
+            number: selectedCard.number,
+            variant: selectedCard.variant,
+            rarity: selectedCard.rarity ?? undefined,
+            image_small: selectedCard.imageSmall,
+            image_large: selectedCard.imageLarge,
+            current_price: selectedCard.price,
+          }}
+          onClose={() => setSelectedCard(null)}
+        />
       )}
     </div>
   );
