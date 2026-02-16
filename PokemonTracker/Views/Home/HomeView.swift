@@ -385,8 +385,7 @@ struct HomeView: View {
                 NavigationLink(destination: CardDetailView(card: card)) {
                     FeaturedCardView(
                         card: card,
-                        showPriceChange: true,
-                        priceChangePercent: Double.random(in: -15...25) // Simulated for demo
+                        showPriceChange: false
                     )
                 }
                 .buttonStyle(PlainButtonStyle())

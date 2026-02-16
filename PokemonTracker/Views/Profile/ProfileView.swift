@@ -332,11 +332,11 @@ struct ProfileView: View {
                 .foregroundColor(Color.pokemon.textPrimary)
 
             VStack(spacing: 0) {
-                AboutRow(label: "Version", value: "1.0.0")
+                AboutRow(label: "Version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")
                 Divider().background(Color.pokemon.background)
-                AboutRow(label: "Data Source", value: "Pokemon TCG API")
+                AboutRow(label: "Data Source", value: "PokeTrace API")
                 Divider().background(Color.pokemon.background)
-                AboutRow(label: "Prices", value: "TCGPlayer")
+                AboutRow(label: "Prices", value: "TCGPlayer + eBay")
             }
             .background(Color.pokemon.surface)
             .cornerRadius(12)

@@ -22,24 +22,6 @@ export interface MarketMoversResponse {
   cached_at: string;
 }
 
-// Seed card IDs for fallback when price_history is sparse
-const SEED_CARD_IDS = [
-  'base1-4',     // Charizard
-  'base1-2',     // Blastoise
-  'base1-15',    // Venusaur
-  'base1-58',    // Pikachu
-  'swsh9-114',   // Charizard VSTAR
-  'sv3pt5-172',  // Mew ex
-  'sv1-198',     // Miraidon ex
-  'sv4-228',     // Charizard ex
-  'swsh12pt5-160', // Lugia VSTAR
-  'sm12-195',    // Charizard & Braixen GX
-  'swsh1-136',   // Zacian V
-  'xy12-106',    // Evolutions Charizard
-  'sm35-1',      // Charizard GX
-  'dp3-130',     // Gardevoir Lv.X
-  'bw6-21',      // Rayquaza EX
-];
 
 export class MarketMoversService {
   private pokemonTCGService = new PokemonTCGService();
@@ -264,38 +246,9 @@ export class MarketMoversService {
     }
   }
 
-  private async getFallbackCards(direction: 'asc' | 'desc'): Promise<MarketMoverCard[]> {
-    try {
-      const cards = await this.pokemonTCGService.getCardsByIds(
-        SEED_CARD_IDS.slice(0, 10)
-      );
-
-      return cards.map(card => {
-        const price = this.pokemonTCGService.extractMarketPrice(card);
-        // Simulate a price change for seed cards
-        const changePercent = direction === 'desc'
-          ? Math.random() * 20 + 1
-          : -(Math.random() * 15 + 1);
-        const previousPrice = price ? price / (1 + changePercent / 100) : null;
-
-        return {
-          card_id: card.id,
-          name: card.name,
-          set_name: card.set.name,
-          rarity: card.rarity || null,
-          image_small: card.images.small,
-          image_large: card.images.large,
-          current_price: price,
-          previous_price: previousPrice ? Math.round(previousPrice * 100) / 100 : null,
-          price_change: price && previousPrice ? Math.round((price - previousPrice) * 100) / 100 : null,
-          price_change_percent: Math.round(changePercent * 100) / 100,
-          tracker_count: 0,
-        };
-      });
-    } catch (error) {
-      console.error('Error fetching fallback cards:', error);
-      return [];
-    }
+  private async getFallbackCards(_direction: 'asc' | 'desc'): Promise<MarketMoverCard[]> {
+    // No fallback — return empty rather than simulated data
+    return [];
   }
 
   private async fetchCardMetadata(cardIds: string[]): Promise<Map<string, any>> {
