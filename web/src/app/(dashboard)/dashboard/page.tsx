@@ -8,7 +8,7 @@ export default async function DashboardPage() {
 
   const { data: collection } = await supabase
     .from('collection_cards')
-    .select('current_price, quantity, set_name')
+    .select('card_id, current_price, quantity, set_name')
     .eq('user_id', user?.id);
 
   const totalCards = collection?.reduce((sum, card) => sum + (card.quantity || 1), 0) || 0;
@@ -20,12 +20,51 @@ export default async function DashboardPage() {
   // Calculate unique sets
   const uniqueSets = new Set(collection?.map(c => c.set_name).filter(Boolean)).size;
 
-  // Estimate cards up/down (based on price thresholds for visual display)
-  const cardsWithPrice = collection?.filter(c => c.current_price > 0) || [];
-  const cardsUp = cardsWithPrice.filter(c => c.current_price >= 5).length;
-  const cardsDown = cardsWithPrice.filter(c => c.current_price < 5).length;
-  const upPercent = cardsWithPrice.length > 0 ? Math.round((cardsUp / cardsWithPrice.length) * 100) : 0;
-  const downPercent = cardsWithPrice.length > 0 ? Math.round((cardsDown / cardsWithPrice.length) * 100) : 0;
+  // Calculate real cards up/down from price history (last 7 days)
+  const cardIds = collection?.map(c => c.card_id) || [];
+  let cardsUp = 0;
+  let cardsDown = 0;
+  let cardsUnchanged = 0;
+
+  if (cardIds.length > 0) {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const { data: priceHistory } = await supabase
+      .from('price_history')
+      .select('card_id, price, recorded_at')
+      .in('card_id', cardIds)
+      .gte('recorded_at', sevenDaysAgo)
+      .order('recorded_at', { ascending: true });
+
+    if (priceHistory && priceHistory.length > 0) {
+      const firstPrice = new Map<string, number>();
+      const lastPrice = new Map<string, number>();
+      for (const entry of priceHistory) {
+        if (!firstPrice.has(entry.card_id)) {
+          firstPrice.set(entry.card_id, entry.price);
+        }
+        lastPrice.set(entry.card_id, entry.price);
+      }
+
+      for (const card of collection || []) {
+        const first = firstPrice.get(card.card_id);
+        const last = lastPrice.get(card.card_id);
+        if (first !== undefined && last !== undefined) {
+          if (last > first) cardsUp++;
+          else if (last < first) cardsDown++;
+          else cardsUnchanged++;
+        } else {
+          cardsUnchanged++;
+        }
+      }
+    } else {
+      cardsUnchanged = cardIds.length;
+    }
+  }
+
+  const totalWithData = cardsUp + cardsDown + cardsUnchanged;
+  const upPercent = totalWithData > 0 ? Math.round((cardsUp / totalWithData) * 100) : 0;
+  const downPercent = totalWithData > 0 ? Math.round((cardsDown / totalWithData) * 100) : 0;
   const unchangedPercent = 100 - upPercent - downPercent;
 
   // Fetch recent additions

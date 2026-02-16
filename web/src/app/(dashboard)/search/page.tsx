@@ -47,35 +47,43 @@ interface DisplayCard {
   imageLarge: string;
   price: number;
   priceSource: string;
+  priceChange7d: number | null;
 }
 
-function extractPrice(detail: PokeTraceDetail): { price: number; source: string } {
+function extractPrice(detail: PokeTraceDetail): { price: number; source: string; change7d: number | null } {
   const tcg = detail.prices?.tcgplayer;
   const ebay = detail.prices?.ebay;
 
+  let price = 0;
+  let source = '';
+
   // Prefer TCGPlayer Near Mint, then Lightly Played
-  if (tcg?.NEAR_MINT?.avg) return { price: tcg.NEAR_MINT.avg, source: 'TCGPlayer' };
-  if (tcg?.LIGHTLY_PLAYED?.avg) return { price: tcg.LIGHTLY_PLAYED.avg, source: 'TCGPlayer' };
-  if (tcg?.MODERATELY_PLAYED?.avg) return { price: tcg.MODERATELY_PLAYED.avg, source: 'TCGPlayer' };
-
+  if (tcg?.NEAR_MINT?.avg) { price = tcg.NEAR_MINT.avg; source = 'TCGPlayer'; }
+  else if (tcg?.LIGHTLY_PLAYED?.avg) { price = tcg.LIGHTLY_PLAYED.avg; source = 'TCGPlayer'; }
+  else if (tcg?.MODERATELY_PLAYED?.avg) { price = tcg.MODERATELY_PLAYED.avg; source = 'TCGPlayer'; }
   // Fall back to eBay Near Mint, then Lightly Played
-  if (ebay?.NEAR_MINT?.avg) return { price: ebay.NEAR_MINT.avg, source: 'eBay' };
-  if (ebay?.LIGHTLY_PLAYED?.avg) return { price: ebay.LIGHTLY_PLAYED.avg, source: 'eBay' };
-  if (ebay?.MODERATELY_PLAYED?.avg) return { price: ebay.MODERATELY_PLAYED.avg, source: 'eBay' };
-
+  else if (ebay?.NEAR_MINT?.avg) { price = ebay.NEAR_MINT.avg; source = 'eBay'; }
+  else if (ebay?.LIGHTLY_PLAYED?.avg) { price = ebay.LIGHTLY_PLAYED.avg; source = 'eBay'; }
+  else if (ebay?.MODERATELY_PLAYED?.avg) { price = ebay.MODERATELY_PLAYED.avg; source = 'eBay'; }
   // Any TCGPlayer condition
-  if (tcg) {
+  else if (tcg) {
     const first = Object.values(tcg).find(v => v.avg > 0);
-    if (first) return { price: first.avg, source: 'TCGPlayer' };
+    if (first) { price = first.avg; source = 'TCGPlayer'; }
   }
-
   // Any eBay condition
-  if (ebay) {
+  else if (ebay) {
     const first = Object.values(ebay).find(v => v.avg > 0);
-    if (first) return { price: first.avg, source: 'eBay' };
+    if (first) { price = first.avg; source = 'eBay'; }
   }
 
-  return { price: 0, source: '' };
+  // Compute 7-day price change from eBay data
+  let change7d: number | null = null;
+  const ebayCondition = ebay?.NEAR_MINT || ebay?.LIGHTLY_PLAYED;
+  if (ebayCondition?.avg && ebayCondition.avg7d && ebayCondition.avg7d > 0) {
+    change7d = ((ebayCondition.avg - ebayCondition.avg7d) / ebayCondition.avg7d) * 100;
+  }
+
+  return { price, source, change7d };
 }
 
 export default function SearchPage() {
@@ -125,6 +133,7 @@ export default function SearchPage() {
         imageLarge: card.image,
         price: 0,
         priceSource: '',
+        priceChange7d: null,
       }));
 
       setResults(initial);
@@ -140,8 +149,8 @@ export default function SearchPage() {
             );
             const detailData = await detailRes.json();
             const detail: PokeTraceDetail = detailData.data;
-            const { price, source } = extractPrice(detail);
-            return { ...card, price, priceSource: source };
+            const { price, source, change7d } = extractPrice(detail);
+            return { ...card, price, priceSource: source, priceChange7d: change7d };
           } catch {
             return card;
           }
@@ -188,17 +197,10 @@ export default function SearchPage() {
     setAddingCard(null);
   };
 
-  // Generate a pseudo-random percentage for display based on card id
-  const getChangePercent = (card: DisplayCard): number => {
-    const hash = card.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const base = (hash % 200) / 10 - 10;
-    return parseFloat(base.toFixed(1));
-  };
-
-  // Filter results by "gainers" or "losers"
+  // Filter results by "gainers" or "losers" using real 7-day price change
   const filteredResults = results.filter((card) => {
-    const change = getChangePercent(card);
-    return activeTab === 'gainers' ? change >= 0 : change < 0;
+    if (card.priceChange7d === null) return false;
+    return activeTab === 'gainers' ? card.priceChange7d >= 0 : card.priceChange7d < 0;
   });
 
   const displayResults = filteredResults.length > 0 ? filteredResults : results;
@@ -262,8 +264,8 @@ export default function SearchPage() {
       {displayResults.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 stagger-children">
           {displayResults.map((card) => {
-            const change = getChangePercent(card);
-            const isPositive = change >= 0;
+            const change = card.priceChange7d;
+            const isPositive = change !== null && change >= 0;
 
             return (
               <div
@@ -308,13 +310,15 @@ export default function SearchPage() {
                     ) : (
                       <div className="skeleton-shimmer h-4 w-16" />
                     )}
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                      isPositive
-                        ? 'bg-accent-green-dim text-accent-green'
-                        : 'bg-accent-red-dim text-accent-red'
-                    }`}>
-                      {isPositive ? '+' : ''}{change}%
-                    </span>
+                    {change !== null && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                        isPositive
+                          ? 'bg-accent-green-dim text-accent-green'
+                          : 'bg-accent-red-dim text-accent-red'
+                      }`}>
+                        {isPositive ? '+' : ''}{change.toFixed(1)}%
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={() => addToCollection(card)}
